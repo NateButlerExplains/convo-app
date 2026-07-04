@@ -1,0 +1,1 @@
+export function SectionCard({ title, kicker, children, className = "" }: { title: string; kicker?: string; children: React.ReactNode; className?: string }) { return <article className={`section-card ${className}`}>{kicker && <p className="card-kicker">{kicker}</p>}<h2>{title}</h2>{children}</article>; }

@@ -1,0 +1,7 @@
+import type { MoveMapData } from "../types/move-map";
+import { budgetTotals } from "../lib/selectors";
+import { formatCurrencyRange, formatDate } from "../lib/formatters";
+import { PageHeader } from "../components/PageHeader";
+import { SectionCard } from "../components/SectionCard";
+import { ConfidenceBadge } from "../components/ConfidenceBadge";
+export function BudgetView({ data }: { data: MoveMapData }) { const oneTime=budgetTotals(data.budget_items,"one_time"); const monthly=budgetTotals(data.budget_items,"monthly"); return <div className="view"><PageHeader eyebrow="Budget" title="Ranges that make uncertainty discussable">Every number is a planning input, not a final conclusion.</PageHeader><section className="summary-strip"><div><span>One-time placeholder</span><strong>{formatCurrencyRange(oneTime.low, oneTime.high, "USD")}</strong></div><div><span>Monthly placeholder</span><strong>{formatCurrencyRange(monthly.low, monthly.high, "EUR")}</strong></div></section><section className="card-grid">{data.budget_items.map((item)=><SectionCard key={item.id} title={item.label} kicker={`${item.category} · ${item.frequency}`}><div className="price-line">{formatCurrencyRange(item.estimate_low,item.estimate_high,item.currency)}</div><p>{item.notes}</p><div className="card-meta"><ConfidenceBadge confidence={item.confidence}/><span>Checked: {formatDate(item.date_checked)}</span><span>{item.phase}</span></div></SectionCard>)}</section></div>; }

@@ -1,0 +1,35 @@
+{
+  "initial": {
+    "homeText": "Home Dashboard",
+    "coreHasHome": false,
+    "groupButtons": [
+      {
+        "text": "Core",
+        "color": "rgb(37, 92, 112)",
+        "expanded": "true"
+      },
+      {
+        "text": "Planning",
+        "color": "rgb(37, 92, 112)",
+        "expanded": "true"
+      },
+      {
+        "text": "Reference",
+        "color": "rgb(37, 92, 112)",
+        "expanded": "true"
+      }
+    ],
+    "underlines": true,
+    "overflow": false
+  },
+  "collapsed": {
+    "coreExpanded": "false",
+    "itemsHidden": true,
+    "homeStillVisible": true
+  },
+  "narrow": {
+    "overflow": false,
+    "navHeight": 79,
+    "groupButtons": 3
+  }
+}

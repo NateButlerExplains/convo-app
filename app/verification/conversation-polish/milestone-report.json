@@ -1,0 +1,15 @@
+{
+  "metrics": {
+    "pipeline": 4,
+    "setup": 2,
+    "support": 2,
+    "printDirection": "row",
+    "overflow": false
+  },
+  "narrow": {
+    "navHeight": 79,
+    "pipeline": 4,
+    "overflow": false
+  },
+  "errors": []
+}

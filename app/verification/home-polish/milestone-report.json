@@ -1,0 +1,17 @@
+{
+  "clean": {
+    "h1": "Home",
+    "routeGrid": "128.453px 128.453px 128.453px 128.469px 128.453px 128.453px 128.453px 128.469px",
+    "widgetGrid": "266px 266px 266px 266px",
+    "badLinks": [],
+    "housingHref": "#housing",
+    "overflow": false
+  },
+  "narrow": {
+    "navHeight": 79,
+    "widgetColumns": 2,
+    "routeColumns": 4,
+    "overflow": false
+  },
+  "errors": []
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "route": "income",
+    "heading": "Income Planning",
+    "hasPlanningControls": false,
+    "addButtons": 0,
+    "filterButtons": 0,
+    "m4ControlCards": 0,
+    "overflow": false
+  },
+  {
+    "route": "housing",
+    "heading": "Housing Planning",
+    "hasPlanningControls": false,
+    "addButtons": 0,
+    "filterButtons": 0,
+    "m4ControlCards": 0,
+    "overflow": false
+  }
+]

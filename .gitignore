@@ -3,3 +3,5 @@ app/dist/
 app/tsconfig.tsbuildinfo
 .DS_Store
 exports/*.tar.gz
+.hermes/
+app/app/

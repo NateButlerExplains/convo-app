@@ -1,0 +1,292 @@
+{
+  "errors": [],
+  "bad": [],
+  "results": [
+    {
+      "viewport": "desktop",
+      "route": "home",
+      "h1": "Home",
+      "active": "Home",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 0,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "conversation",
+      "h1": "Family conversation tracker",
+      "active": "Conversation",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 0,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "tasks",
+      "h1": "Next steps",
+      "active": "Tasks",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "decisions",
+      "h1": "Decision cards",
+      "active": "Decisions",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "income",
+      "h1": "Income Planning",
+      "active": "Income Planning",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 0,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "housing",
+      "h1": "Housing Planning",
+      "active": "Housing Planning",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 0,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "budget",
+      "h1": "Budget planner",
+      "active": "Budget",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "debt",
+      "h1": "Editable debt ledger",
+      "active": "Debt",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "expenses",
+      "h1": "Editable expense surface",
+      "active": "Expenses",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "calendar",
+      "h1": "Family move calendar",
+      "active": "Calendar",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 0,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "options",
+      "h1": "Compare possible paths",
+      "active": "Options",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "ideas",
+      "h1": "Keep track of open ideas",
+      "active": "Ideas",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "desktop",
+      "route": "risks",
+      "h1": "Uncertainty with a next action",
+      "active": "Risks",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "home",
+      "h1": "Home",
+      "active": "Home",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 0,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "conversation",
+      "h1": "Family conversation tracker",
+      "active": "Conversation",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 0,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "tasks",
+      "h1": "Next steps",
+      "active": "Tasks",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "decisions",
+      "h1": "Decision cards",
+      "active": "Decisions",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "income",
+      "h1": "Income Planning",
+      "active": "Income Planning",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 0,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "housing",
+      "h1": "Housing Planning",
+      "active": "Housing Planning",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 0,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "budget",
+      "h1": "Budget planner",
+      "active": "Budget",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "debt",
+      "h1": "Editable debt ledger",
+      "active": "Debt",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "expenses",
+      "h1": "Editable expense surface",
+      "active": "Expenses",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "calendar",
+      "h1": "Family move calendar",
+      "active": "Calendar",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 0,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "options",
+      "h1": "Compare possible paths",
+      "active": "Options",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "ideas",
+      "h1": "Keep track of open ideas",
+      "active": "Ideas",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    },
+    {
+      "viewport": "narrow",
+      "route": "risks",
+      "h1": "Uncertainty with a next action",
+      "active": "Risks",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroCount": 1,
+      "modalCount": 0
+    }
+  ]
+}

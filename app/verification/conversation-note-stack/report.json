@@ -1,0 +1,14 @@
+{
+  "desktop": {
+    "columns": 1,
+    "noteTop": 608,
+    "archiveTop": 906,
+    "archiveBelowNote": true,
+    "sameLeft": true,
+    "overflow": false
+  },
+  "narrow": {
+    "columns": 1,
+    "overflow": false
+  }
+}

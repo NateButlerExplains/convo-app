@@ -1,0 +1,21 @@
+{
+  "empty": {
+    "badLinks": [],
+    "overflow": false
+  },
+  "values": {
+    "debtTotal": "$1,000",
+    "debtCount": "2 open debts  1 past due",
+    "debtNext": "Next due: Shae  Upcoming real",
+    "expenseTotal": "$1,300",
+    "expenseCount": "2 active rows across both people",
+    "expenseNext": "Next row: Nate rent · Nate",
+    "badLinks": [],
+    "overflow": false,
+    "printDirection": "row"
+  },
+  "narrow": {
+    "overflow": false,
+    "navHeight": 79
+  }
+}

@@ -1,0 +1,239 @@
+{
+  "errors": [],
+  "results": [
+    {
+      "route": "home",
+      "h1": "Home",
+      "navActive": "Home",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": []
+    },
+    {
+      "route": "conversation",
+      "h1": "Family conversation tracker",
+      "navActive": "Conversation",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": []
+    },
+    {
+      "route": "tasks",
+      "h1": "Next steps",
+      "navActive": "Tasks",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": []
+    },
+    {
+      "route": "decisions",
+      "h1": "Decision cards",
+      "navActive": "Decisions",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": []
+    },
+    {
+      "route": "income",
+      "h1": "Income Planning",
+      "navActive": "Income Planning",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": []
+    },
+    {
+      "route": "housing",
+      "h1": "Housing Planning",
+      "navActive": "Housing Planning",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": []
+    },
+    {
+      "route": "budget",
+      "h1": "Budget planner",
+      "navActive": "Budget",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": []
+    },
+    {
+      "route": "debt",
+      "h1": "Editable debt ledger",
+      "navActive": "Debt",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": []
+    },
+    {
+      "route": "expenses",
+      "h1": "Editable expense surface",
+      "navActive": "Expenses",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [
+        {
+          "tag": "TABLE",
+          "cls": "planning-table expense-table",
+          "text": "KindLabelCadenceAmountStatusForecastNotesActionsNo active rows yet.",
+          "left": 868,
+          "right": 1628,
+          "width": 760
+        },
+        {
+          "tag": "THEAD",
+          "cls": "",
+          "text": "KindLabelCadenceAmountStatusForecastNotesActions",
+          "left": 868,
+          "right": 1628,
+          "width": 760
+        },
+        {
+          "tag": "TR",
+          "cls": "",
+          "text": "KindLabelCadenceAmountStatusForecastNotesActions",
+          "left": 868,
+          "right": 1628,
+          "width": 760
+        },
+        {
+          "tag": "TH",
+          "cls": "",
+          "text": "Notes",
+          "left": 1440,
+          "right": 1526,
+          "width": 86
+        },
+        {
+          "tag": "TH",
+          "cls": "",
+          "text": "Actions",
+          "left": 1526,
+          "right": 1628,
+          "width": 103
+        },
+        {
+          "tag": "TBODY",
+          "cls": "",
+          "text": "No active rows yet.",
+          "left": 868,
+          "right": 1628,
+          "width": 760
+        },
+        {
+          "tag": "TR",
+          "cls": "",
+          "text": "No active rows yet.",
+          "left": 868,
+          "right": 1628,
+          "width": 760
+        },
+        {
+          "tag": "TD",
+          "cls": "empty-state",
+          "text": "No active rows yet.",
+          "left": 868,
+          "right": 1628,
+          "width": 760
+        }
+      ]
+    },
+    {
+      "route": "calendar",
+      "h1": "Family move calendar",
+      "navActive": "Calendar",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": []
+    },
+    {
+      "route": "options",
+      "h1": "Compare possible paths",
+      "navActive": "Options",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": []
+    },
+    {
+      "route": "ideas",
+      "h1": "Keep track of open ideas",
+      "navActive": "Ideas",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": []
+    },
+    {
+      "route": "risks",
+      "h1": "Uncertainty with a next action",
+      "navActive": "Risks",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [
+        {
+          "tag": "TABLE",
+          "cls": "planning-table expense-table",
+          "text": "CategoryTitleLikelihoodImpactStatusOwnerTriggerMitigationReviewNotesActionsImmig",
+          "left": 304,
+          "right": 1452,
+          "width": 1148
+        },
+        {
+          "tag": "THEAD",
+          "cls": "",
+          "text": "CategoryTitleLikelihoodImpactStatusOwnerTriggerMitigationReviewNotesActions",
+          "left": 304,
+          "right": 1452,
+          "width": 1148
+        },
+        {
+          "tag": "TR",
+          "cls": "",
+          "text": "CategoryTitleLikelihoodImpactStatusOwnerTriggerMitigationReviewNotesActions",
+          "left": 304,
+          "right": 1452,
+          "width": 1148
+        },
+        {
+          "tag": "TH",
+          "cls": "",
+          "text": "Actions",
+          "left": 1374,
+          "right": 1452,
+          "width": 78
+        },
+        {
+          "tag": "TBODY",
+          "cls": "",
+          "text": "ImmigrationVisa path may not match work/income modelA path that looks promising ",
+          "left": 304,
+          "right": 1452,
+          "width": 1148
+        },
+        {
+          "tag": "TR",
+          "cls": "",
+          "text": "ImmigrationVisa path may not match work/income modelA path that looks promising ",
+          "left": 304,
+          "right": 1452,
+          "width": 1148
+        },
+        {
+          "tag": "TD",
+          "cls": "row-actions",
+          "text": "⋯EditArchiveDelete",
+          "left": 1374,
+          "right": 1452,
+          "width": 78
+        },
+        {
+          "tag": "TR",
+          "cls": "",
+          "text": "BudgetBudget range may be too optimisticHousing, insurance, school, travel, or d",
+          "left": 304,
+          "right": 1452,
+          "width": 1148
+        }
+      ]
+    }
+  ]
+}

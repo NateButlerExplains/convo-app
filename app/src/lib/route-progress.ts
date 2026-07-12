@@ -74,6 +74,8 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
       requirements: [
         { label: "Discuss family priorities for the Barcelona move", taskId: "task-family-priorities", page: "tasks" as const, complete: taskDone(activeTasks, "task-family-priorities"), priority: "high" as RoutePriority, complexity: 1 as RouteComplexity },
         { label: "List family must-haves for housing and daily life", taskId: "task-family-must-haves", page: "tasks" as const, complete: taskDone(activeTasks, "task-family-must-haves"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Separate verified facts from open assumptions", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Set a family decision checkpoint for go / no-go feasibility", page: "decisions" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
     {
@@ -84,6 +86,20 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
         { label: "Write income/work assumptions for visa consult", taskId: "task-visa-assumptions", page: "tasks" as const, complete: taskDone(activeTasks, "task-visa-assumptions"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
         { label: "Compare telework vs non-lucrative assumptions", taskId: "task-visa-compare-options", page: "tasks" as const, complete: taskDone(activeTasks, "task-visa-compare-options"), priority: "high" as RoutePriority, complexity: 3 as RouteComplexity },
         { label: "Mark visa-path decision Decided", page: "decisions" as const, complete: decisionMade(activeDecisions, "decision-visa-path"), priority: "high" as RoutePriority, complexity: 3 as RouteComplexity },
+        { label: "Book a qualified visa / immigration professional consult", page: "tasks" as const, complete: false, priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Confirm consulate jurisdiction, appointment, and filing timeline", page: "tasks" as const, complete: false, priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+      ],
+    },
+    {
+      key: "work-tax-banking",
+      label: "Work, Tax & Banking",
+      taskIds: [],
+      requirements: [
+        { label: "Confirm remote-work or business income continuity plan", page: "tasks" as const, complete: false, priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "List U.S. and Spain tax questions for professional advice", page: "tasks" as const, complete: false, priority: "high" as RoutePriority, complexity: 3 as RouteComplexity },
+        { label: "Compare banking and international transfer options", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Estimate one-time move, setup, and emergency costs separately", page: "budget" as const, complete: false, priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Choose a savings runway target and monthly contribution", page: "budget" as const, complete: false, priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
     {
@@ -105,6 +121,20 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
         { label: "Turn document inventory into deadline calendar", taskId: "task-document-deadlines", page: "tasks" as const, complete: taskDone(activeTasks, "task-document-deadlines"), priority: "high" as RoutePriority, complexity: 3 as RouteComplexity },
         { label: "Update passport validity for each family member", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 1 as RouteComplexity },
         { label: "Arrange apostilles and certified translations", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Confirm civil-record issue dates and expiration windows", page: "tasks" as const, complete: false, priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Create a secure digital and physical document backup", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 1 as RouteComplexity },
+      ],
+    },
+    {
+      key: "healthcare",
+      label: "Healthcare & Insurance",
+      taskIds: [],
+      requirements: [
+        { label: "Compare visa-compliant insurance options", page: "tasks" as const, complete: false, priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Plan pediatric care, prescriptions, and medical records transition", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Map padrón and TSI healthcare eligibility steps", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Choose pediatric providers and prescription continuity plan", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Confirm coverage for the gap between departure and Spanish enrollment", page: "tasks" as const, complete: false, priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
     {
@@ -118,6 +148,8 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
         { label: "Write school and childcare question list", taskId: "task-school-question-list", page: "tasks" as const, complete: taskDone(activeTasks, "task-school-question-list"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
         { label: "Promote at least one housing lead to Gold", page: "housing" as const, complete: liveState.planning.housingActive > 0, priority: "medium" as RoutePriority, complexity: 3 as RouteComplexity },
         { label: "Research school enrollment timelines and forms", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Define lease, padrón, commute, and childcare decision gates", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Verify housing contract requirements before committing", page: "tasks" as const, complete: false, priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
     {
@@ -130,6 +162,8 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
         { label: "Research flight options and seasonal pricing", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
         { label: "Research temporary lodging options near arrival", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
         { label: "Plan pet / belongings shipping if applicable", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Choose what to sell, store, ship, or carry", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Confirm airline baggage, pet, and medication rules", page: "tasks" as const, complete: false, priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
     {
@@ -141,6 +175,8 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
         { label: "Identify first-priority padron registration documents", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
         { label: "Confirm TSI healthcare card eligibility timeline", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
         { label: "Check bank / SIM / utility foreign-resident options", page: "tasks" as const, complete: false, priority: "low" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Create first-week admin checklist for padrón, healthcare, and banking", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Confirm arrival-day address, keys, internet, and essential supplies", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
     {
@@ -151,6 +187,8 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
         { label: "Complete a stabilization-related task", page: "tasks" as const, complete: stabilizationTaskDone(activeTasks), priority: "low" as RoutePriority, complexity: 1 as RouteComplexity },
         { label: "Establish shared-purchase / shared-account systems", page: "tasks" as const, complete: false, priority: "low" as RoutePriority, complexity: 3 as RouteComplexity },
         { label: "Set up recurring budget check-in cadence", page: "tasks" as const, complete: false, priority: "low" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Settle family routines, childcare, and local support network", page: "tasks" as const, complete: false, priority: "low" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Review the plan after the first 30 days and update decisions", page: "tasks" as const, complete: false, priority: "low" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
   ] as const;

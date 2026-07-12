@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { ConversationPrompt, GoalWorkspace } from "../types/convo";
 import type { MoveMapData, Task } from "../types/move-map";
 import { formatDate, titleCase } from "../lib/formatters";
 import { PageHeader } from "../components/PageHeader";
@@ -49,7 +50,11 @@ function createTask(draft: TaskDraft): EditableTask {
 }
 function draftFromTask(task: EditableTask): TaskDraft { return { title: task.title, track: task.track, status: task.status, priority: task.priority ?? "medium", owner: task.owner, dueDate: task.due_date, notes: task.notes }; }
 
-export function TasksView({ data }: { data: MoveMapData }) {
+function findConversationPrompt(task: EditableTask, prompts: ConversationPrompt[]) {
+  return prompts.find((prompt) => prompt.related_task_ids.includes(task.id));
+}
+
+export function TasksView({ data, goalWorkspace }: { data: MoveMapData; goalWorkspace?: GoalWorkspace }) {
   const [tasks, setTasks] = useState<EditableTask[]>(() => loadStoredState()?.tasks ?? data.tasks.map((task) => ({ ...task, archived: false })));
   const [draft, setDraft] = useState<TaskDraft>(blankDraft);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -90,6 +95,7 @@ export function TasksView({ data }: { data: MoveMapData }) {
   const archivedTasks = useMemo(() => tasks.filter((task) => task.archived), [tasks]);
   const seedTasks = useMemo(() => data.tasks.map((task) => ({ ...task, archived: false })), [data.tasks]);
   const librarySource = useMemo(() => Array.from(new Map([...seedTasks, ...activeTasks].map((task) => [task.id, task])).values()), [activeTasks, seedTasks]);
+  const conversationPrompts = goalWorkspace?.conversation_prompts ?? [];
 
   const triggerLibrary = useMemo(() => {
     const sections = [
@@ -166,6 +172,7 @@ export function TasksView({ data }: { data: MoveMapData }) {
                 {!isCollapsed && <div className="track-list trigger-library-items">
                   {section.items.map((task) => {
                     const hasConversation = Boolean(task.conversation_prompt);
+                    const matchedPrompt = hasConversation ? findConversationPrompt(task, conversationPrompts) : undefined;
                     return (
                       <div key={task.id} id={`task-card-${task.id}`} tabIndex={-1} className={`track-row road-track-row trigger-library-item trigger-library-panel ${jumpedTaskId === task.id ? "is-target-task" : ""}`}>
                         <div className="trigger-task-copy">
@@ -174,7 +181,7 @@ export function TasksView({ data }: { data: MoveMapData }) {
                           <p>{task.notes || "No notes yet."}</p>
                           {hasConversation ? <p className="task-conversation-prompt">Discussion: {task.conversation_prompt}</p> : null}
                         </div>
-                        {hasConversation ? <div className="trigger-task-actions"><button type="button" className="task-link" onClick={() => { const ctx = { taskId: task.id, taskTitle: task.title, prompt: task.conversation_prompt, followUpTaskIds: task.follow_up_task_ids ?? [], sectionKey: section.key, openedAt: new Date().toISOString() }; try { window.localStorage.setItem("move-map:conversation-context", JSON.stringify(ctx)); } catch {} window.location.hash = "#conversation"; }}>Open conversation</button></div> : null}
+                        {hasConversation ? <div className="trigger-task-actions"><button type="button" className="task-link" onClick={() => { const ctx = { taskId: task.id, taskTitle: task.title, prompt: matchedPrompt?.prompt_text?.trim() || task.conversation_prompt, followUpTaskIds: task.follow_up_task_ids ?? [], sectionKey: section.key, openedAt: new Date().toISOString(), conversationPromptId: matchedPrompt?.id, promptPurpose: matchedPrompt?.purpose }; try { window.localStorage.setItem("move-map:conversation-context", JSON.stringify(ctx)); } catch {} window.location.hash = "#conversation"; }}>Open conversation</button></div> : null}
                       </div>
                     );
                   })}

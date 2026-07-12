@@ -5,6 +5,8 @@ export type TranscriptParserPanelProps = {
   onSendToTasks: (items: ParsedTranscript["actionItems"]) => void;
   onSendToDecisions: (items: ParsedTranscript["decisions"]) => void;
   isParsing: boolean;
+  sentTaskIds?: string[];
+  sentDecisionIds?: string[];
 };
 
 export function TranscriptParserPanel({
@@ -12,6 +14,8 @@ export function TranscriptParserPanel({
   onSendToTasks,
   onSendToDecisions,
   isParsing,
+  sentTaskIds = [],
+  sentDecisionIds = [],
 }: TranscriptParserPanelProps) {
   if (isParsing) {
     return (
@@ -62,13 +66,19 @@ export function TranscriptParserPanel({
                   {item.text}
                   {item.owner ? <em className="parser-item-owner"> · {item.owner}</em> : null}
                 </span>
-                <button
-                  type="button"
-                  className="chip"
-                  onClick={() => onSendToTasks([item])}
-                >
-                  Send to Tasks
-                </button>
+                {sentTaskIds.includes(item.text) ? (
+                  <button type="button" className="chip is-sent" disabled>
+                    Sent
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={() => onSendToTasks([item])}
+                  >
+                    Send to Tasks
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -82,13 +92,19 @@ export function TranscriptParserPanel({
             {parsed.decisions.map((item, idx) => (
               <div className="parser-item" key={`decision-${idx}`}>
                 <span className="parser-item-text">{item.text}</span>
-                <button
-                  type="button"
-                  className="chip"
-                  onClick={() => onSendToDecisions([item])}
-                >
-                  Send to Decisions
-                </button>
+                {sentDecisionIds.includes(item.text) ? (
+                  <button type="button" className="chip is-sent" disabled>
+                    Sent
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={() => onSendToDecisions([item])}
+                  >
+                    Send to Decisions
+                  </button>
+                )}
               </div>
             ))}
           </div>

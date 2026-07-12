@@ -29,7 +29,7 @@ export type DocumentItem = { id: ID; name: string; person: "Nate" | "Wife" | "Ch
 export type SnapshotRecord = { id: ID; title: string; type: "full" | "budget" | "decisions" | "roadmap" | "open_questions" | "documents"; created_at: DateString; included_sections: string[]; output_path: string; notes: string };
 export type MoveMapData = { meta: Meta; plan: Plan; sources: Source[]; planning_tracks: PlanningTrack[]; roadmap_phases: RoadmapPhase[]; milestones: Milestone[]; budget_items: BudgetItem[]; debt_items: DebtItem[]; expense_items: ExpenseItem[]; decisions: Decision[]; options: Option[]; ideas: Idea[]; tasks: Task[]; risks: Risk[]; documents: DocumentItem[]; snapshots: SnapshotRecord[] };
 export type ViewKey = "home" | "big-trip" | "conversation" | "roadmap" | "calendar" | "budget" | "debt" | "expenses" | "income" | "housing" | "decisions" | "alons-skills" | "options" | "ideas" | "tasks" | "risks" | "snapshots";
-export type ConversationContext = { taskId: string; taskTitle: string; prompt: string; followUpTaskIds: string[]; sectionKey?: string; openedAt?: string };
+export type ConversationContext = { taskId: string; taskTitle: string; prompt: string; followUpTaskIds: string[]; sectionKey?: string; openedAt?: string; conversationPromptId?: string; promptPurpose?: string };
 
 // ── Recording & Transcription ──
 

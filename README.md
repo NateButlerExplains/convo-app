@@ -26,7 +26,7 @@ All data stays on your machine. No cloud, no accounts, no publishing.
 ```bash
 cd app
 npm install
-npm run dev        # http://127.0.0.1:5173
+npm run dev        # http://127.0.0.1:4173
 ```
 
 Build and preview:

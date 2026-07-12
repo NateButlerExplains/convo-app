@@ -1,3 +1,5 @@
+import { toGoalWorkspaceFromMoveMap } from "./adapters/move-map-to-convo";
+import type { GoalWorkspace } from "../types/convo";
 import type { BudgetItem, Decision, DebtItem, DocumentItem, ExpenseItem, Idea, Milestone, MoveMapData, Option, Risk, SnapshotRecord, Task } from "../types/move-map";
 
 export type CockpitLiveState = {
@@ -28,6 +30,12 @@ export type CockpitLiveState = {
     spainForecast: number;
     nextLabel: string;
   };
+};
+
+export type LiveSnapshotResult = {
+  roadmapData: MoveMapData;
+  liveState: CockpitLiveState;
+  goalWorkspace: GoalWorkspace;
 };
 
 const STORAGE_KEYS = {
@@ -157,11 +165,11 @@ function summarizeExpensesState(expenseRows: ExpenseItem[]): CockpitLiveState["e
     currentTotal: nateTotal,
     spainCount: shaeRows.length,
     spainForecast: shaeTotal,
-    nextLabel: nextRow ? `${nextRow.label} · ${resolveExpensePerson(nextRow)}` : "No person expense rows yet",
+    nextLabel: nextRow ? `${nextRow.label}  ${resolveExpensePerson(nextRow)}` : "No person expense rows yet",
   };
 }
 
-export function loadLiveSnapshot(baseData: MoveMapData, milestones: Milestone[]) {
+export function loadLiveSnapshot(baseData: MoveMapData, milestones: Milestone[]): LiveSnapshotResult {
   const budgetItems = loadArrayFromWrapper<BudgetItem>(STORAGE_KEYS.budget, "items", baseData.budget_items);
   const debtItems = loadArrayFromWrapper<DebtItem>(STORAGE_KEYS.debt, "debtItems", baseData.debt_items);
   const expenseItems = loadArrayFromWrapper<ExpenseItem>(STORAGE_KEYS.expenses, "expenseItems", baseData.expense_items);
@@ -194,6 +202,8 @@ export function loadLiveSnapshot(baseData: MoveMapData, milestones: Milestone[])
     snapshots,
   };
 
+  const goalWorkspace = toGoalWorkspaceFromMoveMap(roadmapData);
+
   return {
     roadmapData,
     liveState: {
@@ -202,5 +212,6 @@ export function loadLiveSnapshot(baseData: MoveMapData, milestones: Milestone[])
       debt: summarizeDebtState(debtItems),
       expenses: summarizeExpensesState(expenseItems),
     },
+    goalWorkspace,
   };
 }

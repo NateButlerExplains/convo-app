@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "../components/PageHeader";
 import { notifyMoveMapStateChanged } from "../lib/state-events";
 import { SectionCard } from "../components/SectionCard";
+import type { GoalWorkspace, PlanningSection } from "../types/convo";
 import type { MoveMapData } from "../types/move-map";
 
 type Status = "Active" | "Planned" | "Brainstorming";
@@ -81,7 +82,18 @@ function statusChipClass(status: Status) { return status === "Active" ? "status-
 function menuLabel(kind: ItemKind) { return kind === "income" ? "Income item" : "Housing item"; }
 function statusControlClass(status: Status) { return `status-control ${statusChipClass(status)}`; }
 
-export function M4PlanningView({ data, initialKind = "all" }: { data: MoveMapData; initialKind?: ItemKind | "all" }) {
+function findPlanningSection(kind: ItemKind | "all", planningSections: PlanningSection[]) {
+  if (kind === "all") {
+    return planningSections.find((section) => section.section_type === "goal_planning")
+      ?? planningSections.find((section) => section.section_type === "decision_planning")
+      ?? planningSections.find((section) => section.section_type === "income_housing");
+  }
+  return planningSections.find((section) => section.section_type === "goal_planning")
+    ?? planningSections.find((section) => section.section_type === "decision_planning")
+    ?? planningSections.find((section) => section.section_type === "income_housing" || section.section_type === kind);
+}
+
+export function M4PlanningView({ data, goalWorkspace, initialKind = "all" }: { data: MoveMapData; goalWorkspace?: GoalWorkspace; initialKind?: ItemKind | "all" }) {
   const [initialState] = useState<StoredState>(() => loadState());
   const [incomeRows, setIncomeRows] = useState<IncomeRow[]>(() => initialState.incomeRows);
   const [housingRows, setHousingRows] = useState<HousingRow[]>(() => initialState.housingRows);
@@ -101,6 +113,7 @@ export function M4PlanningView({ data, initialKind = "all" }: { data: MoveMapDat
   const showIncome = initialKind !== "housing";
   const showHousing = initialKind !== "income";
   const pageTitle = initialKind === "income" ? "Income" : "Housing";
+  const planningSection = useMemo(() => findPlanningSection(initialKind, goalWorkspace?.planning_sections ?? []), [goalWorkspace, initialKind]);
 
   const beginEditIncome = (row: IncomeRow) => setEditing({ kind: "income", ...row });
   const beginEditHousing = (row: HousingRow) => setEditing({ kind: "housing", ...row });
@@ -128,6 +141,7 @@ export function M4PlanningView({ data, initialKind = "all" }: { data: MoveMapDat
           ? "Track Nate and Shae income options, projected ranges, status, and archived alternatives."
           : "Rank and compare housing options with contacts, features, notes, and archive history."}
       </PageHeader>
+      {planningSection ? <p className="small-text">{planningSection.title}{planningSection.description ? `  ${planningSection.description}` : ""}</p> : null}
       <div className="m4-grid">
         {showIncome && <SectionCard title="Income" kicker="Nate + Shae" className="m4-panel m4-panel-income"><div className="section-subhead"><span>{visibleIncome.length} active items</span><span>{archivedIncome.length} archived</span></div><div className="comparison-table-wrap"><table className="planning-table editable-table"><thead><tr><th>Person</th><th>Track</th><th>Status</th><th>Projected income</th><th>Notes</th><th>Actions</th></tr></thead><tbody>{visibleIncome.length === 0 ? <tr><td colSpan={6} className="empty-state">{incomeRows.length === 0 ? "No income items yet." : "No non-archived income items. Check the archive below."}</td></tr> : visibleIncome.map((row) => <tr key={row.id} className={row.id === spotlightRow?.id ? "is-spotlight" : ""}><td>{row.person}</td><td>{row.label}</td><td><button type="button" className={statusControlClass(row.status)} onClick={() => beginEditIncome(row)}>{row.status}</button></td><td>{row.range}</td><td>{row.notes}</td><td className="row-actions"><div className="ellipsis-menu"><button type="button" className="chip ellipsis-trigger" aria-haspopup="menu" aria-expanded={menuOpen === row.id} onClick={() => setMenuOpen(menuOpen === row.id ? null : row.id)}>...</button>{menuOpen === row.id && <div className="ellipsis-popup" role="menu"><button type="button" role="menuitem" onClick={() => beginEditIncome(row)}>Edit</button><button type="button" role="menuitem" onClick={() => duplicateItem("income", row.id)}>Duplicate</button><button type="button" role="menuitem" onClick={() => archiveItem("income", row.id)}>Archive</button></div>}</div></td></tr>)}</tbody></table></div><details className="archive-list"><summary>Archived income ({archivedIncome.length})</summary><div className="archive-body">{archivedIncome.length === 0 ? <p className="empty-state">No archived income items.</p> : archivedIncome.map((row) => <div key={row.id} className="archive-row"><strong>{row.person}</strong><span>{row.label}</span><div className="print-actions"><button type="button" className="chip" onClick={() => setIncomeRows((rows) => rows.map((item) => item.id === row.id ? { ...item, archived: false } : item))}>Restore</button><button type="button" className="chip modal-delete" onClick={() => deleteItem("income", row.id)}>Delete</button></div></div>)}</div></details></SectionCard>}
         {showHousing && <SectionCard title="Housing" kicker="Search table + ranking"><div className="section-subhead"><span>{visibleHousing.length} active items</span><span>{archivedHousing.length} archived</span></div><div className="comparison-table-wrap"><table className="planning-table editable-table housing-table"><thead><tr><th>Rank</th><th>Option</th><th>Contact</th><th>Website</th><th>Features</th><th>Why it ranks here</th><th>Notes</th><th>Actions</th></tr></thead><tbody>{visibleHousing.length === 0 ? <tr><td colSpan={8} className="empty-state">{housingRows.length === 0 ? "No housing items yet." : "All housing items are archived. Restore one below."}</td></tr> : visibleHousing.map((option) => <tr key={option.id} className={option.id === spotlightHousing?.id ? "is-spotlight" : ""}><td><button type="button" className={`rank-badge rank-${option.rank.toLowerCase()}`} onClick={() => beginEditHousing(option)}>{option.rank}</button></td><td>{option.name}</td><td>{option.contact}</td><td>{option.website}</td><td>{option.features}</td><td>{option.why}</td><td>{option.notes}</td><td className="row-actions"><div className="ellipsis-menu"><button type="button" className="chip ellipsis-trigger" aria-haspopup="menu" aria-expanded={menuOpen === option.id} onClick={() => setMenuOpen(menuOpen === option.id ? null : option.id)}>...</button>{menuOpen === option.id && <div className="ellipsis-popup" role="menu"><button type="button" role="menuitem" onClick={() => beginEditHousing(option)}>Edit</button><button type="button" role="menuitem" onClick={() => duplicateItem("housing", option.id)}>Duplicate</button><button type="button" role="menuitem" onClick={() => archiveItem("housing", option.id)}>Archive</button></div>}</div></td></tr>)}</tbody></table></div><details className="archive-list"><summary>Archived housing ({archivedHousing.length})</summary><div className="archive-body">{archivedHousing.length === 0 ? <p className="empty-state">No archived housing items.</p> : archivedHousing.map((row) => <div key={row.id} className="archive-row"><strong>{row.name}</strong><span>{row.rank}</span><div className="print-actions"><button type="button" className="chip" onClick={() => setHousingRows((rows) => rows.map((item) => item.id === row.id ? { ...item, archived: false } : item))}>Restore</button><button type="button" className="chip modal-delete" onClick={() => deleteItem("housing", row.id)}>Delete</button></div></div>)}</div></details></SectionCard>}

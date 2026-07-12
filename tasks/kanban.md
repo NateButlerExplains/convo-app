@@ -52,6 +52,54 @@ Mission: Audit every Expenses-pattern page for add-button placement and archive/
 - Interim review misses noted before approval: the first review pass left a couple of archive-policy decisions and page-pattern inconsistencies unresolved, so the sweep stayed open until those gaps were explicitly documented and routed.
 - Final state: the interim misses were captured, follow-up direction was approved, and the expenses-pattern sweep is now closed as completed.
 
+## Next Milestone  Route Map as Planning Control Center  Proposed
+Mission: Make Dashboard route-map items reliable, sequential, persistent, and impossible to miss while preserving the compact two-column roadmap UX.
+- [ ] Persist route-map item archive / restore state in localStorage so archived roadmap requirements survive reloads.
+- [ ] Add early airline feasibility requirement under Research and leave ticket purchase under Travel so flight work is surfaced months before departure.
+- [ ] Add clear route requirement ownership for Work, Tax & Banking and Healthcare & Insurance in the Tasks trigger library; currently route-progress has these categories but Tasks trigger sections do not.
+- [ ] Reconcile `LANDMARKS`, `route-progress.ts`, and Tasks trigger-library category definitions into one shared roadmap/category source so labels, order, and links cannot drift.
+- [ ] Add route-map row-pair behavior tests to `verify:route-map` or a dedicated Playwright script instead of relying on ad-hoc verifier scripts.
+- [ ] Add visual verification screenshots for expanded/collapsed route-map rows, archive state, inactive state, and mobile width.
+- [ ] Review route-map archive semantics: decide whether archived requirements should affect progress or only hide/de-emphasize work.
+
+## Next Milestone  Local Data Reliability & State Architecture  Proposed
+Mission: Reduce localStorage drift, duplicate persistence code, and silent data loss risks across editable pages.
+- [ ] Create a shared typed storage helper for localStorage read/write, migration, fallback, and error reporting.
+- [ ] Add schema validation for stored Tasks, Decisions, Budget, Expenses, Debt, Ideas, Options, Risks, M4 Planning, and Calendar data.
+- [ ] Add one data integrity script that checks seeded IDs, route requirement task IDs, decision IDs, and storage-key consistency.
+- [ ] Add import/export backup flow for all local app state, not just print/JSON snapshot slices.
+- [ ] Add storage quota / IndexedDB failure messaging for recordings and large archived sessions.
+- [ ] Decide whether route-map archive state, roadmap requirements, and task board should share one durable task model or remain UI-specific state.
+
+## Next Milestone  Conversation Pipeline Hardening  Proposed
+Mission: Make recording, Whisper transcription, 9router parsing, and dispatch-to-tasks/decisions easier to trust and recover.
+- [ ] Remove dead Web Speech transcription code and stale comments now that Whisper API is the real path.
+- [ ] Rename stale `LM_STUDIO_URL` constants/comments to 9router/OpenAI-compatible endpoint naming.
+- [ ] Add endpoint health indicators for Whisper `localhost:8000` and 9router `localhost:20128` before recording or retry.
+- [ ] Add parser output preview / confirmation before sending parsed tasks and decisions into live pages.
+- [ ] Add duplicate-detection when dispatching parsed action items so repeated retries do not create duplicate tasks/decisions.
+- [ ] Add tests for transcription failure, parser failure, retry from saved blob, retry from cached labeled transcript, and stale-session prevention.
+- [ ] Add archive search/filter for recorded conversation sessions by task, owner, date, and parse status.
+
+## Next Milestone  Page Consistency & Navigation Cleanup  Proposed
+Mission: Clean up remaining page drift and dead surfaces so nav, route-map, and editable pages agree.
+- [ ] Remove or fully restore `DocumentsView`; current file is a null stub while roadmap still has a Documents category.
+- [ ] Decide whether Documents returns as a real page or remains task-only; align nav, route-map links, snapshot type, and Tasks trigger library accordingly.
+- [ ] Add missing Tasks trigger-library sections for Work, Tax & Banking and Healthcare & Insurance.
+- [ ] Review `ViewKey` for obsolete values like `roadmap` / `snapshots` that are not exposed in current navigation.
+- [ ] Normalize archive/delete/delete-all behavior across Budget, Debt, Expenses, Decisions, Options, Ideas, Tasks, and Risks.
+- [ ] Normalize modal form layout and row actions across all editable ledger pages.
+- [ ] Add empty-state copy audit for every page so blank states explain the next useful action.
+
+## Next Milestone  Verification & Developer Quality Gates  Proposed
+Mission: Turn repeated manual/ad-hoc checks into fast repeatable project commands.
+- [ ] Add `npm run typecheck` as explicit documented quality gate alongside `npm run build`.
+- [ ] Add focused Playwright verification scripts for Dashboard, Tasks trigger routing, conversation pipeline, archive lifecycle, and route-map interactions.
+- [ ] Add regression coverage for localStorage migrations and malformed stored JSON recovery.
+- [ ] Add screenshot-backed visual verification workflow for the Dashboard route map at mobile and desktop widths.
+- [ ] Add CI/local script that starts an isolated Vite server, runs verifiers, and cleans up automatically.
+- [ ] Pin package versions or lock install policy if repeatable local verification continues to matter.
+
 ## Backlog
 - Fix "Move Map" branding in upper left NavRail: change `.brand` CSS from pill-shaped (border-radius: 18px, gradient bg) to clean rectangular box (border-radius: 4px, solid bg)
 - Continue route-map polish on Home only; the standalone `RoadmapView` was intentionally removed.

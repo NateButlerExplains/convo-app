@@ -49,7 +49,8 @@ export default function App() {
     };
   }, []);
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(milestones)); }, [milestones]);
-  const { roadmapData, liveState } = useMemo(() => loadLiveSnapshot(data, milestones), [data, milestones, syncTick]);
+  const { roadmapData, liveState, goalWorkspace } = useMemo(() => loadLiveSnapshot(data, milestones), [data, milestones, syncTick]);
+  void goalWorkspace;
   const content = useMemo(() => {
     switch (view) {
       case "big-trip": return <BigTripView data={roadmapData} />;
@@ -58,17 +59,17 @@ export default function App() {
       case "budget": return <BudgetView data={roadmapData} />;
       case "debt": return <DebtView data={roadmapData} />;
       case "expenses": return <ExpensesView data={roadmapData} />;
-      case "income": return <M4PlanningView data={roadmapData} initialKind="income" />;
-      case "housing": return <M4PlanningView data={roadmapData} initialKind="housing" />;
+      case "income": return <M4PlanningView data={roadmapData} goalWorkspace={goalWorkspace} initialKind="income" />;
+      case "housing": return <M4PlanningView data={roadmapData} goalWorkspace={goalWorkspace} initialKind="housing" />;
 
       case "decisions": return <DecisionsView data={roadmapData} />;
       case "alons-skills": return <AlonsSkillsView />;
       case "options": return <OptionsView data={roadmapData} />;
       case "ideas": return <IdeasView data={roadmapData} />;
-      case "tasks": return <TasksView data={roadmapData} />;
+      case "tasks": return <TasksView data={roadmapData} goalWorkspace={goalWorkspace} />;
       case "risks": return <RisksView data={roadmapData} />;
-      default: return <HomeView data={roadmapData} liveState={liveState} />;
+      default: return <HomeView data={roadmapData} liveState={liveState} goalWorkspace={goalWorkspace} />;
     }
-  }, [milestones, roadmapData, view]);
+  }, [goalWorkspace, milestones, roadmapData, view]);
   return <AppShell data={roadmapData} view={view}>{content}</AppShell>;
 }

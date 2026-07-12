@@ -4,6 +4,7 @@ import { PageHeader } from "../components/PageHeader";
 import { notifyMoveMapStateChanged } from "../lib/state-events";
 import { SectionCard } from "../components/SectionCard";
 import { MoveCountdown } from "../components/MoveCountdown";
+import { formatDate } from "../lib/formatters";
 
 type EventType = "deadline" | "family visit" | "daughter event" | "move milestone" | "important family date";
 
@@ -120,7 +121,7 @@ export function FamilyTimelineView({ data }: { data: MoveMapData }) {
             <button className="chip button-primary" type="button" onClick={() => { setNewDraft({ date: defaultEntryDate, label: "", type: "move milestone", note: "" }); setModal({ kind: "new", date: defaultEntryDate }); }}>Add new entry</button>
           </div>
         </div>
-        <MoveCountdown destinationLabel={`Barcelona - ${data.plan.target_move_date || "2027-01"}`} />
+        <MoveCountdown destinationLabel={`Barcelona - ${formatDate(data.plan.target_move_date)}`} />
         <div className="calendar-shell">
           <div className="calendar-grid">
             {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <div key={day} className="calendar-dow">{day}</div>)}

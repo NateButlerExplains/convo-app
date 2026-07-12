@@ -1,5 +1,6 @@
 import type { MoveMapData } from "../types/move-map";
 import { MoveCountdown } from "../components/MoveCountdown";
+import { formatDate } from "../lib/formatters";
 
 const photos = [
   { city: "Barcelona", title: "Sagrada Família", src: "https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=1200&q=80" },
@@ -20,7 +21,7 @@ const photos = [
 ];
 
 export function BigTripView({ data }: { data: MoveMapData }) {
-  const destination = `${data.plan.destination} - ${data.plan.target_move_date || "2027-01"}`;
+  const destination = `${data.plan.destination} - ${formatDate(data.plan.target_move_date)}`;
 
   return (
     <div className="view big-trip-view">

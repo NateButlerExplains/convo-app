@@ -6,6 +6,7 @@ import { SectionCard } from "../components/SectionCard";
 import { Waveform } from "../components/Waveform";
 import { TranscriptParserPanel } from "../components/TranscriptParserPanel";
 import { transcribeRecording, transcribeRecordingWithSegments, type WhisperSegment } from "../lib/transcription-service";
+import { toConvoDecisionDraftsFromArchivedSession, toConvoTaskDraftsFromArchivedSession } from "../lib/convo-adapters";
 import { useRecording } from "../hooks/useRecording";
 import { parseTranscript } from "../lib/transcript-parser";
 import { notifyMoveMapStateChanged } from "../lib/state-events";
@@ -211,6 +212,18 @@ export function ConversationView({ data: _data }: { data: MoveMapData }) {
   const [isParsing, setIsParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [taskContext, setTaskContext] = useState<ConversationContext | null>(null);
+  const [sentTaskTexts, setSentTaskTexts] = useState<string[]>([]);
+  const [sentDecisionTexts, setSentDecisionTexts] = useState<string[]>([]);
+  const latestArchivedSessionDrafts = useMemo(() => {
+    const latestParsedSession = archive.find((session) => !!session.parsedTranscript);
+    if (!latestParsedSession) return { taskDrafts: [], decisionDrafts: [] };
+
+    return {
+      taskDrafts: toConvoTaskDraftsFromArchivedSession(latestParsedSession, `conversation-session-${latestParsedSession.id}`),
+      decisionDrafts: toConvoDecisionDraftsFromArchivedSession(latestParsedSession, `conversation-session-${latestParsedSession.id}`),
+    };
+  }, [archive]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const refreshContext = () => {
@@ -218,8 +231,23 @@ export function ConversationView({ data: _data }: { data: MoveMapData }) {
         const raw = window.localStorage.getItem("move-map:conversation-context");
         if (!raw) return;
         const parsed = JSON.parse(raw) as ConversationContext;
-        if (parsed && typeof parsed.taskId === "string" && typeof parsed.taskTitle === "string" && typeof parsed.prompt === "string") {
-          setTaskContext(parsed);
+        if (
+          parsed &&
+          typeof parsed.taskId === "string" &&
+          typeof parsed.taskTitle === "string" &&
+          typeof parsed.prompt === "string" &&
+          Array.isArray(parsed.followUpTaskIds)
+        ) {
+          setTaskContext({
+            taskId: parsed.taskId,
+            taskTitle: parsed.taskTitle,
+            prompt: parsed.prompt,
+            followUpTaskIds: parsed.followUpTaskIds.filter((id): id is string => typeof id === "string"),
+            sectionKey: typeof parsed.sectionKey === "string" ? parsed.sectionKey : undefined,
+            openedAt: typeof parsed.openedAt === "string" ? parsed.openedAt : undefined,
+            conversationPromptId: typeof parsed.conversationPromptId === "string" ? parsed.conversationPromptId : undefined,
+            promptPurpose: typeof parsed.promptPurpose === "string" ? parsed.promptPurpose : undefined,
+          });
         }
       } catch {
         /* ignore */
@@ -613,7 +641,7 @@ export function ConversationView({ data: _data }: { data: MoveMapData }) {
         openedAt: new Date().toISOString(),
       }));
       setFlash({ id: Date.now(), text: `Sent ${newTasks.length} task${newTasks.length === 1 ? "" : "s"} to Tasks.` });
-      window.location.hash = `#tasks-trigger-ad-hoc-conversation-tasks-${newTasks[0]?.id ?? ""}`;
+      setSentTaskTexts((current) => [...current, ...newTasks.map((task) => task.title)]);
       notifyMoveMapStateChanged();
     } catch {
       console.warn("Could not persist dispatched tasks.");
@@ -663,7 +691,7 @@ export function ConversationView({ data: _data }: { data: MoveMapData }) {
         openedAt: new Date().toISOString(),
       }));
       setFlash({ id: Date.now(), text: `Sent ${newDecisions.length} decision${newDecisions.length === 1 ? "" : "s"} to Decisions.` });
-      window.location.hash = "#decisions";
+      setSentDecisionTexts((current) => [...current, ...newDecisions.map((decision) => decision.title)]);
       notifyMoveMapStateChanged();
     } catch {
       console.warn("Could not persist dispatched decisions.");
@@ -671,6 +699,8 @@ export function ConversationView({ data: _data }: { data: MoveMapData }) {
   };
 
   const meter = (person: Participant) => `${Math.max(8, (speakingTotals[person] / maxSpeakerSeconds) * 100)}%`;
+
+  void latestArchivedSessionDrafts;
 
   return (
     <div className="view conversation-mode">
@@ -683,6 +713,7 @@ export function ConversationView({ data: _data }: { data: MoveMapData }) {
           <div className="conversation-context-banner">
             <strong>Working on: {taskContext.taskTitle}</strong>
             <p>{taskContext.prompt}</p>
+            {taskContext.promptPurpose ? <p className="small-text">Purpose: {taskContext.promptPurpose}</p> : null}
             {taskContext.followUpTaskIds.length > 0 && (
               <ul>
                 {taskContext.followUpTaskIds.map((id) => (
@@ -818,6 +849,8 @@ export function ConversationView({ data: _data }: { data: MoveMapData }) {
             onSendToTasks={sendToTasks}
             onSendToDecisions={sendToDecisions}
             isParsing={isParsing}
+            sentTaskIds={sentTaskTexts}
+            sentDecisionIds={sentDecisionTexts}
           />
         )}
 

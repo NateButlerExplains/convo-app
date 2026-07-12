@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { buildCountdownText, splitCountdownParts } from "../lib/move-countdown";
 
 export function MoveCountdown({
-  destinationLabel = "Barcelona - 2027-01",
+  destinationLabel = "Barcelona - January 15th 2027",
   className = "",
   compact = false,
 }: {

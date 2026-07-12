@@ -9,7 +9,7 @@ All data stays on your machine. No cloud, no accounts, no publishing.
 - **Dashboard**  command center with the live "Move Map" route rail (roadmap phases derived from edits on the planning pages), quick metrics, and conversation radar.
 - **Conversation**  record family planning conversations, auto-transcribe with Whisper, parse into tasks/decisions/notes, and keep an archive. A prominent **Record session** button starts the flow.
 - **Tasks / Decisions**  conversation-promoted tasks and decision cards, with archive and delete-all support.
-- **Alon's Skills**  a kid-friendly six-month star board for our three-year-old. A **Barcelona Trip** star bank holds 180 stars that you drag (or tap **Add star**) into **Communication**, **Collaboration**, and **Listening** skills. The Listening skill shows a six-month list of accomplishments to practice before the trip.
+- **Aloni's Skills**  a kid-friendly six-month star board for our three-year-old. A **Barcelona Trip** star bank holds 180 stars that you drag (or tap **Add star**) into **Communication**, **Collaboration**, and **Listening** skills. The Listening skill shows a six-month list of accomplishments to practice before the trip.
 - **Planning**  Income Planning, Housing Planning, Budget, Debt, and Expenses with a shared add/archive/delete-all pattern.
 - **Reference**  Family Timeline (calendar), Options comparison, Ideas, and Risks.
 - **Export**  browser print and JSON snapshot download for preserving state over time.
@@ -46,7 +46,7 @@ npm run typecheck
 
 | Group | Pages |
 | --- | --- |
-| Core | Dashboard, Conversation, Tasks, Decisions, Alon's Skills |
+| Core | Dashboard, Conversation, Tasks, Decisions, Aloni's Skills |
 | Planning | Income Planning, Housing Planning, Budget, Debt, Expenses |
 | Reference | Family Timeline, Options, Ideas, Risks |
 

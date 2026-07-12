@@ -170,90 +170,55 @@ export function RisksView({ data }: { data: MoveMapData }) {
   };
 
   return (
-    <div className="view spreadsheet-view">
-      <PageHeader eyebrow="Risks" title="Uncertainty with a next action">
-        Start with blank local state, keep live risks in the ledger, and archive resolved items when you want the working set to stay focused.
+    <div className="view reference-page risks-page">
+      <PageHeader title="Risks">
+        Live risk ledger with likelihood, impact, mitigation, and archive for items no longer active.
       </PageHeader>
 
-      <section className="hero-card">
-        <div>
-          <h2>Risk register</h2>
-          <p>Track triggers, mitigations, and review flags in the table, then move resolved risks into the archive instead of leaving them in the active set.</p>
-        </div>
-        <div className="page-actions" aria-label="Risk editor actions">
-          <button className="chip button-primary" type="button" onClick={openModal}>
-            Add risk
-          </button>
-        </div>
+      <section className="reference-summary" aria-label="Risk summary">
+        <div><span>Active risks</span><strong>{activeRisks.length}</strong></div>
+        <div><span>High impact</span><strong>{activeRisks.filter((risk) => risk.impact === "high").length}</strong></div>
+        <div><span>Archived</span><strong>{archivedRisks.length}</strong></div>
+        <button className="chip button-primary" type="button" onClick={openModal}>Add risk</button>
       </section>
 
-      <section className="summary-strip">
-        <div>
-          <span>Watching now</span>
-          <strong>{activeRisks.length}</strong>
-        </div>
-        <div>
-          <span>Archived</span>
-          <strong>{archivedRisks.length}</strong>
-        </div>
-      </section>
-
-      <SectionCard title="Risk ledger" kicker="Editable risk rows">
-        <div className="expense-table-wrap">
-          <table className="planning-table expense-table risk-table">
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Title</th>
-                <th>Likelihood</th>
-                <th>Impact</th>
-                <th>Status</th>
-                <th>Owner</th>
-                <th>Trigger</th>
-                <th>Mitigation</th>
-                <th>Review</th>
-                <th>Notes</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activeRisks.length === 0 ? (
-                <tr>
-                  <td colSpan={11} className="empty-state">No active risks yet.</td>
-                </tr>
-              ) : (
-                activeRisks.map((risk) => (
-                  <tr key={risk.id}>
-                    <td>{risk.category}</td>
-                    <td>
-                      <strong>{risk.title}</strong>
-                      {risk.description ? <div className="small-text">{risk.description}</div> : null}
-                    </td>
-                    <td><StatusPill status={`likelihood-${risk.likelihood}`} /></td>
-                    <td><StatusPill status={`impact-${risk.impact}`} /></td>
-                    <td><StatusPill status={risk.status} /></td>
-                    <td>{risk.owner}</td>
-                    <td>{risk.trigger || "—"}</td>
-                    <td>{risk.mitigation || "—"}</td>
-                    <td>{risk.professional_advice_required ? "Professional review" : "No"}</td>
-                    <td>{risk.notes || "—"}</td>
-                    <td className="row-actions">
-                      <details className="row-actions-menu">
-                        <summary aria-label="Row actions" title="Row actions">⋯</summary>
-                        <div className="row-actions-popover" role="menu">
-                          <button type="button" role="menuitem" onClick={() => openEditModal(risk)}>Edit</button>
-                          <button type="button" role="menuitem" onClick={() => archiveRisk(risk.id, true)}>Archive</button>
-                          <button type="button" role="menuitem" onClick={() => deleteRisk(risk.id)}>Delete</button>
-                        </div>
-                      </details>
-                    </td>
-                  </tr>
-                ))
+      {activeRisks.length === 0 ? (
+        <SectionCard title="No active risks" className="empty-note-state">
+          <p>Add a risk when something needs an owner, trigger, or mitigation plan.</p>
+        </SectionCard>
+      ) : (
+        <section className="risk-card-grid" aria-label="Active risks">
+          {activeRisks.map((risk) => (
+            <article key={risk.id} className={`section-card risk-card risk-impact-${risk.impact}`}>
+              <div className="risk-card-head">
+                <span className="risk-category">{risk.category}</span>
+                <StatusPill status={risk.status} />
+              </div>
+              <h2>{risk.title}</h2>
+              {risk.description ? <p className="risk-description">{risk.description}</p> : null}
+              <div className="risk-signal-row">
+                <StatusPill status={`likelihood-${risk.likelihood}`} />
+                <StatusPill status={`impact-${risk.impact}`} />
+                <span className="risk-owner">Owner: {risk.owner}</span>
+              </div>
+              <div className="risk-plan-grid">
+                <div><span>Trigger</span><p>{risk.trigger || "Not defined yet."}</p></div>
+                <div><span>Mitigation</span><p>{risk.mitigation || "Not defined yet."}</p></div>
+              </div>
+              {(risk.professional_advice_required || risk.notes) && (
+                <div className="risk-note-row">
+                  {risk.professional_advice_required && <span className="advice-flag">Professional review</span>}
+                  {risk.notes && <p>{risk.notes}</p>}
+                </div>
               )}
-            </tbody>
-          </table>
-        </div>
-      </SectionCard>
+              <div className="card-meta risk-card-actions">
+                <button className="chip" type="button" onClick={() => openEditModal(risk)}>Edit</button>
+                <button className="chip" type="button" onClick={() => archiveRisk(risk.id, true)}>Archive</button>
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
 
       <details className="archive-list">
         <summary>Archived risks ({archivedRisks.length})</summary>

@@ -2,14 +2,38 @@ import type { MoveMapData, Task } from "../types/move-map";
 import type { CockpitLiveState } from "./live-snapshot";
 
 export type RoutePage = "tasks" | "decisions" | "budget" | "housing" | "calendar";
-export type RouteRequirement = { label: string; page: RoutePage; complete: boolean; taskId?: string };
+export type RoutePriority = "high" | "medium" | "low";
+export type RouteComplexity = 1 | 2 | 3;
+
+export type RouteRequirement = {
+  label: string;
+  page: RoutePage;
+  complete: boolean;
+  taskId?: string;
+  priority: RoutePriority;
+  complexity: RouteComplexity;
+};
+
 export type RouteCheckpointStatus = "future" | "current" | "blocked" | "complete";
+
 export type RouteCheckpoint = {
   key: string;
   label: string;
   status: RouteCheckpointStatus;
   requirements: RouteRequirement[];
 };
+
+const priorityOrder: Record<RoutePriority, number> = { high: 0, medium: 1, low: 2 };
+
+function byPriority(a: RouteRequirement, b: RouteRequirement) {
+  return priorityOrder[a.priority] - priorityOrder[b.priority];
+}
+
+function priorityLabel(priority: RoutePriority) {
+  if (priority === "high") return "Priority";
+  if (priority === "medium") return "Track";
+  return "Later";
+}
 
 function isActive(record: { archived?: boolean } | object) {
   return !("archived" in record && record.archived === true);
@@ -48,8 +72,8 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
       label: "Research",
       taskIds: ["task-family-priorities", "task-family-must-haves"],
       requirements: [
-        { label: "Discuss family priorities for the Barcelona move", taskId: "task-family-priorities", page: "tasks", complete: taskDone(activeTasks, "task-family-priorities") },
-        { label: "List family must-haves for housing and daily life", taskId: "task-family-must-haves", page: "tasks", complete: taskDone(activeTasks, "task-family-must-haves") },
+        { label: "Discuss family priorities for the Barcelona move", taskId: "task-family-priorities", page: "tasks" as const, complete: taskDone(activeTasks, "task-family-priorities"), priority: "high" as RoutePriority, complexity: 1 as RouteComplexity },
+        { label: "List family must-haves for housing and daily life", taskId: "task-family-must-haves", page: "tasks" as const, complete: taskDone(activeTasks, "task-family-must-haves"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
     {
@@ -57,9 +81,9 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
       label: "Visa Path",
       taskIds: ["task-visa-assumptions", "task-visa-compare-options"],
       requirements: [
-        { label: "Complete visa work/income assumptions task", taskId: "task-visa-assumptions", page: "tasks", complete: taskDone(activeTasks, "task-visa-assumptions") },
-        { label: "Compare telework vs non-lucrative assumptions", taskId: "task-visa-compare-options", page: "tasks", complete: taskDone(activeTasks, "task-visa-compare-options") },
-        { label: "Mark visa-path decision Decided", page: "decisions", complete: decisionMade(activeDecisions, "decision-visa-path") },
+        { label: "Write income/work assumptions for visa consult", taskId: "task-visa-assumptions", page: "tasks" as const, complete: taskDone(activeTasks, "task-visa-assumptions"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Compare telework vs non-lucrative assumptions", taskId: "task-visa-compare-options", page: "tasks" as const, complete: taskDone(activeTasks, "task-visa-compare-options"), priority: "high" as RoutePriority, complexity: 3 as RouteComplexity },
+        { label: "Mark visa-path decision Decided", page: "decisions" as const, complete: decisionMade(activeDecisions, "decision-visa-path"), priority: "high" as RoutePriority, complexity: 3 as RouteComplexity },
       ],
     },
     {
@@ -67,9 +91,9 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
       label: "Budget Confidence",
       taskIds: ["task-budget-ranges", "task-budget-buffer"],
       requirements: [
-        { label: "Complete budget-range research task", taskId: "task-budget-ranges", page: "tasks", complete: taskDone(activeTasks, "task-budget-ranges") },
-        { label: "Decide family emergency buffer target", taskId: "task-budget-buffer", page: "tasks", complete: taskDone(activeTasks, "task-budget-buffer") },
-        { label: "Enter a planned amount on the Budget page", page: "budget", complete: hasPlannedBudget(activeBudgetItems) },
+        { label: "Research current cost ranges for first budget pass", taskId: "task-budget-ranges", page: "tasks" as const, complete: taskDone(activeTasks, "task-budget-ranges"), priority: "high" as RoutePriority, complexity: 3 as RouteComplexity },
+        { label: "Decide family emergency buffer target", taskId: "task-budget-buffer", page: "tasks" as const, complete: taskDone(activeTasks, "task-budget-buffer"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Enter a planned amount on the Budget page", page: "budget" as const, complete: hasPlannedBudget(activeBudgetItems), priority: "medium" as RoutePriority, complexity: 1 as RouteComplexity },
       ],
     },
     {
@@ -77,8 +101,10 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
       label: "Documents",
       taskIds: ["task-document-inventory", "task-document-deadlines"],
       requirements: [
-        { label: "Complete document inventory and timing watch", taskId: "task-document-inventory", page: "tasks", complete: taskDone(activeTasks, "task-document-inventory") },
-        { label: "Turn document inventory into deadline calendar", taskId: "task-document-deadlines", page: "tasks", complete: taskDone(activeTasks, "task-document-deadlines") },
+        { label: "Create document inventory and timing watch", taskId: "task-document-inventory", page: "tasks" as const, complete: taskDone(activeTasks, "task-document-inventory"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Turn document inventory into deadline calendar", taskId: "task-document-deadlines", page: "tasks" as const, complete: taskDone(activeTasks, "task-document-deadlines"), priority: "high" as RoutePriority, complexity: 3 as RouteComplexity },
+        { label: "Update passport validity for each family member", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 1 as RouteComplexity },
+        { label: "Arrange apostilles and certified translations", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
     {
@@ -86,11 +112,12 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
       label: "Housing & Schools",
       taskIds: ["task-neighborhood-shortlist", "task-neighborhood-housing-filters", "task-school-timing", "task-school-question-list"],
       requirements: [
-        { label: "Pick neighborhood candidates for comparison", taskId: "task-neighborhood-shortlist", page: "tasks", complete: taskDone(activeTasks, "task-neighborhood-shortlist") },
-        { label: "Turn shortlist into housing filters", taskId: "task-neighborhood-housing-filters", page: "tasks", complete: taskDone(activeTasks, "task-neighborhood-housing-filters") },
-        { label: "Map child age to preschool questions", taskId: "task-school-timing", page: "tasks", complete: taskDone(activeTasks, "task-school-timing") },
-        { label: "Write school and childcare question list", taskId: "task-school-question-list", page: "tasks", complete: taskDone(activeTasks, "task-school-question-list") },
-        { label: "Promote at least one housing lead to Gold", page: "housing", complete: liveState.planning.housingActive > 0 },
+        { label: "Pick 3-4 neighborhood candidates for comparison", taskId: "task-neighborhood-shortlist", page: "tasks" as const, complete: taskDone(activeTasks, "task-neighborhood-shortlist"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Turn shortlist into housing filters", taskId: "task-neighborhood-housing-filters", page: "tasks" as const, complete: taskDone(activeTasks, "task-neighborhood-housing-filters"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Map child age to preschool questions", taskId: "task-school-timing", page: "tasks" as const, complete: taskDone(activeTasks, "task-school-timing"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Write school and childcare question list", taskId: "task-school-question-list", page: "tasks" as const, complete: taskDone(activeTasks, "task-school-question-list"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Promote at least one housing lead to Gold", page: "housing" as const, complete: liveState.planning.housingActive > 0, priority: "medium" as RoutePriority, complexity: 3 as RouteComplexity },
+        { label: "Research school enrollment timelines and forms", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
     {
@@ -98,8 +125,11 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
       label: "Travel",
       taskIds: ["task-arrival-checklist", "task-arrival-packet"],
       requirements: [
-        { label: "Complete first-week arrival checklist", taskId: "task-arrival-checklist", page: "tasks", complete: taskDone(activeTasks, "task-arrival-checklist") },
-        { label: "Assemble arrival packet and first-week routines", taskId: "task-arrival-packet", page: "tasks", complete: taskDone(activeTasks, "task-arrival-packet") },
+        { label: "Draft first-week arrival checklist", taskId: "task-arrival-checklist", page: "tasks" as const, complete: taskDone(activeTasks, "task-arrival-checklist"), priority: "high" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Assemble arrival packet and first-week routines", taskId: "task-arrival-packet", page: "tasks" as const, complete: taskDone(activeTasks, "task-arrival-packet"), priority: "high" as RoutePriority, complexity: 3 as RouteComplexity },
+        { label: "Research flight options and seasonal pricing", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Research temporary lodging options near arrival", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Plan pet / belongings shipping if applicable", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
     {
@@ -107,7 +137,10 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
       label: "Arrival",
       taskIds: [],
       requirements: [
-        { label: "Add a January 2027 move milestone to Calendar", page: "calendar", complete: liveState.calendar.hasArrivalMilestone },
+        { label: "Add a January 2027 move milestone to Calendar", page: "calendar" as const, complete: liveState.calendar.hasArrivalMilestone, priority: "medium" as RoutePriority, complexity: 1 as RouteComplexity },
+        { label: "Identify first-priority padron registration documents", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Confirm TSI healthcare card eligibility timeline", page: "tasks" as const, complete: false, priority: "medium" as RoutePriority, complexity: 2 as RouteComplexity },
+        { label: "Check bank / SIM / utility foreign-resident options", page: "tasks" as const, complete: false, priority: "low" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
     {
@@ -115,22 +148,29 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
       label: "Stabilization",
       taskIds: [],
       requirements: [
-        { label: "Complete a task whose title or track includes stabilization", page: "tasks", complete: stabilizationTaskDone(activeTasks) },
+        { label: "Complete a stabilization-related task", page: "tasks" as const, complete: stabilizationTaskDone(activeTasks), priority: "low" as RoutePriority, complexity: 1 as RouteComplexity },
+        { label: "Establish shared-purchase / shared-account systems", page: "tasks" as const, complete: false, priority: "low" as RoutePriority, complexity: 3 as RouteComplexity },
+        { label: "Set up recurring budget check-in cadence", page: "tasks" as const, complete: false, priority: "low" as RoutePriority, complexity: 2 as RouteComplexity },
       ],
     },
   ] as const;
 
   const firstIncomplete = definitions.findIndex((checkpoint) => checkpoint.requirements.some((requirement) => !requirement.complete));
   const currentIndex = firstIncomplete === -1 ? definitions.length - 1 : firstIncomplete;
-  const checkpoints: RouteCheckpoint[] = definitions.map((checkpoint, index) => {
+  const checkpoints: RouteCheckpoint[] = definitions.map((checkpoint) => {
     const complete = checkpoint.requirements.every((requirement) => requirement.complete);
     const blocked = checkpoint.taskIds.some((id) => taskBlocked(activeTasks, id));
     const status: RouteCheckpointStatus = complete
       ? "complete"
-      : index === currentIndex
+      : checkpoint.key === definitions[currentIndex].key
         ? blocked ? "blocked" : "current"
         : "future";
-    return { key: checkpoint.key, label: checkpoint.label, status, requirements: [...checkpoint.requirements] };
+    return {
+      key: checkpoint.key,
+      label: checkpoint.label,
+      status,
+      requirements: [...checkpoint.requirements].sort(byPriority),
+    };
   });
 
   return {
@@ -141,3 +181,5 @@ export function deriveRouteProgress(data: MoveMapData, liveState: CockpitLiveSta
     completedCount: checkpoints.filter((checkpoint) => checkpoint.status === "complete").length,
   };
 }
+
+export { priorityLabel };

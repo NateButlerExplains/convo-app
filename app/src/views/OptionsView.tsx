@@ -108,7 +108,8 @@ function draftFromOption(option: EditableOption): OptionDraft {
 
 export function OptionsView({ data }: { data: MoveMapData }) {
   const [options, setOptions] = useState<EditableOption[]>(() => loadOptions() ?? data.options.map((option, index) => normalizeOption(option, index)));
-  const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set(groups));
+  const [selectedCategories, setSelectedCategories] = useState<Set<Option["category"]>>(new Set(groups));
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [draft, setDraft] = useState<OptionDraft>(blankDraft);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -156,16 +157,22 @@ export function OptionsView({ data }: { data: MoveMapData }) {
     closeModal();
   };
 
-  const toggleCategory = (category: string) => {
-    setActiveCategories((prev) => {
-      const next = new Set(prev);
+  const toggleGroup = (category: string) => {
+    setCollapsedGroups((current) => ({ ...current, [category]: !current[category] }));
+  };
+
+  const toggleCategory = (category: Option["category"]) => {
+    setSelectedCategories((current) => {
+      const next = new Set(current);
       if (next.has(category)) next.delete(category);
       else next.add(category);
       return next;
     });
   };
 
-  const resetCategories = () => setActiveCategories(new Set(groups));
+  const toggleAllCategories = () => {
+    setSelectedCategories((current) => (current.size === groups.length ? new Set() : new Set(groups)));
+  };
 
   const updateOption = (id: string, updates: Partial<EditableOption>) => {
     setOptions((current) => current.map((option) => (option.id === id ? { ...option, ...updates } : option)));
@@ -187,41 +194,46 @@ export function OptionsView({ data }: { data: MoveMapData }) {
   };
 
   return (
-    <div className="view">
-      <PageHeader eyebrow="Options" title="Compare possible paths">
-        Use this page to compare visa routes, neighborhoods, schools, housing, and other planning options before deciding.
+    <div className="view reference-page options-page">
+      <PageHeader title="Options">
+        Compare visa routes, neighborhoods, schools, housing, and other paths before a decision is made.
       </PageHeader>
 
-      <section className="hero-card">
-        <div>
-          <h2>Planning options</h2>
-          <p>Add and compare only the options you actually want to evaluate.</p>
-        </div>
-        <div className="page-actions" aria-label="Option actions">
-          <button type="button" className="chip button-primary" onClick={openModal}>Add option</button>
-        </div>
-      </section>
-
       {activeOptions.length > 0 && (
-        <div className="category-filter-bar">
-          <span className="filter-bar-label" style={{ marginRight: ".35rem" }}>Category</span>
-          {groups.map((group) => {
-            const count = activeOptions.filter((o) => o.category === group).length;
-            return (
-              <button
-                key={group}
-                type="button"
-                className={`category-chip ${activeCategories.has(group) ? "active" : ""}`}
-                onClick={() => toggleCategory(group)}
-              >
-                {titleCase(group)}
-                {count > 0 && <span style={{ marginLeft: ".25rem", opacity: 0.6 }}>({count})</span>}
-              </button>
-            );
-          })}
-          <button type="button" className="filter-chip" style={{ marginLeft: ".25rem" }} onClick={resetCategories}>
-            Show all
-          </button>
+        <div className="options-toolbar">
+          <div className="category-filter-bar options-filter-grid">
+            <button
+              type="button"
+              className={`category-chip ${selectedCategories.size === groups.length ? "active" : ""}`}
+              onClick={toggleAllCategories}
+            >
+              Show all
+            </button>
+            {groups.map((group) => {
+              const count = activeOptions.filter((o) => o.category === group).length;
+              return (
+                <button
+                  key={group}
+                  type="button"
+                  className={`category-chip ${selectedCategories.has(group) ? "active" : ""}`}
+                  onClick={() => toggleCategory(group)}
+                >
+                  {titleCase(group)}
+                  {count > 0 && <span style={{ marginLeft: ".25rem", opacity: 0.6 }}>({count})</span>}
+                </button>
+              );
+            })}
+          </div>
+          <div className="page-actions options-toolbar-actions">
+            <button type="button" className="chip button-primary" onClick={openModal}>Add option</button>
+          </div>
+        </div>
+      )}
+
+      {activeOptions.length === 0 && (
+        <div className="section-subhead options-subhead">
+          <div />
+          <button type="button" className="chip button-primary" onClick={openModal}>Add option</button>
         </div>
       )}
 
@@ -231,21 +243,31 @@ export function OptionsView({ data }: { data: MoveMapData }) {
         </SectionCard>
       ) : (
         groups.map((group) => {
-          if (!activeCategories.has(group)) return null;
+          if (!selectedCategories.has(group)) return null;
           const items = activeOptions.filter((option) => option.category === group);
           if (!items.length) return null;
           return (
-            <section key={group}>
-              <h2 className="section-heading">{titleCase(group)}</h2>
-              <div className="card-grid">
+            <section key={group} className="option-category-group">
+              <button
+                type="button"
+                className="section-heading option-group-toggle"
+                onClick={() => toggleGroup(group)}
+                aria-expanded={!collapsedGroups[group]}
+              >
+                <span>{titleCase(group)}</span>
+                <span className="priority-group-count">{items.length}</span>
+                <span className="priority-group-chevron">{collapsedGroups[group] ? "+" : "-"}</span>
+              </button>
+              {!collapsedGroups[group] && <div className="card-grid">
                 {items.map((option) => (
                   <SectionCard
                     key={option.id}
                     title={option.name || "Untitled option"}
                     kicker={option.professional_advice_required ? "Professional advice required" : "Planning option"}
+                    className="option-card"
                   >
-                    <div className="modal-body">
-                      <p>{option.summary || "No summary yet."}</p>
+                    <div className="option-card-body">
+                      <p className="option-summary">{option.summary || "No summary yet."}</p>
 
                       {(option.pros.length > 0 || option.cons.length > 0) && (
                         <div className="pros-cons-strip">
@@ -280,13 +302,13 @@ export function OptionsView({ data }: { data: MoveMapData }) {
 
                       {option.notes && <p>{option.notes}</p>}
                     </div>
-                    <div className="card-meta">
+                    <div className="card-meta option-card-actions">
                       <button className="chip" type="button" onClick={() => openEditModal(option)}>Edit</button>
                       <button className="chip" type="button" onClick={() => archiveOption(option.id, true)}>Archive</button>
                     </div>
                   </SectionCard>
                 ))}
-              </div>
+              </div>}
             </section>
           );
         })

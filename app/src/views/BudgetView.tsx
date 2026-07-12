@@ -47,11 +47,9 @@ const blankDraft: BudgetDraft = {
 
 function loadStoredState(): BudgetStorageState | null {
   if (typeof window === "undefined") return null;
-
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-
     const parsed = JSON.parse(raw) as Partial<BudgetStorageState>;
     return {
       items: Array.isArray(parsed.items)
@@ -129,7 +127,6 @@ export function BudgetView({ data }: { data: MoveMapData }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const state: BudgetStorageState = { items, draft };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ items, draft }));
     notifyMoveMapStateChanged();
   }, [items, draft]);
@@ -160,7 +157,6 @@ export function BudgetView({ data }: { data: MoveMapData }) {
 
   const saveDraft = () => {
     if (!draft.label.trim()) return;
-
     if (editingId) {
       setItems((current) =>
         current.map((item) =>
@@ -170,7 +166,6 @@ export function BudgetView({ data }: { data: MoveMapData }) {
     } else {
       setItems((current) => [createBudgetItem(draft), ...current]);
     }
-
     closeModal();
   };
 
@@ -191,21 +186,9 @@ export function BudgetView({ data }: { data: MoveMapData }) {
 
   return (
     <div className="view spreadsheet-view">
-      <PageHeader eyebrow="Budget" title="Budget planner">
-        Start from a blank slate, add the items you want to test, and archive old ranges when you want the live board to stay focused.
+      <PageHeader title="Budget">
+        Editable budget ledger for move costs, ranges, and planning estimates you can archive as numbers firm up.
       </PageHeader>
-
-      <section className="hero-card">
-        <div>
-          <h2>Budget planner</h2>
-          <p>Keep active cost ranges in the ledger, then move older assumptions into the archive instead of leaving them in the main table.</p>
-        </div>
-        <div className="page-actions" aria-label="Budget actions">
-          <button className="chip button-primary" type="button" onClick={openCreateModal}>
-            New budget item
-          </button>
-        </div>
-      </section>
 
       <section className="summary-strip">
         <div>
@@ -223,13 +206,18 @@ export function BudgetView({ data }: { data: MoveMapData }) {
       </section>
 
       <SectionCard title="Budget ledger" kicker="Editable planning rows">
+        <div className="section-subhead">
+          <span>{activeItems.length} active items</span>
+          <button className="chip button-primary" type="button" onClick={openCreateModal}>
+            New budget item
+          </button>
+        </div>
         <div className="expense-table-wrap">
-          <table className="planning-table expense-table budget-table">
+          <table className="planning-table budget-table">
             <thead>
               <tr>
                 <th>Category</th>
                 <th>Label</th>
-                <th>Phase</th>
                 <th>Estimate</th>
                 <th>Planned</th>
                 <th>Actual</th>
@@ -243,24 +231,23 @@ export function BudgetView({ data }: { data: MoveMapData }) {
             <tbody>
               {activeItems.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="empty-state">No active budget items yet.</td>
+                  <td colSpan={10} className="empty-state">No active budget items yet.</td>
                 </tr>
               ) : (
                 activeItems.map((item) => (
                   <tr key={item.id}>
                     <td>{item.category}</td>
                     <td>{item.label}</td>
-                    <td>{item.phase}</td>
                     <td>{formatCurrencyRange(item.estimate_low, item.estimate_high, item.currency)}</td>
-                    <td>{item.planned_amount == null ? "—" : formatCurrencyRange(item.planned_amount, item.planned_amount, item.currency)}</td>
-                    <td>{item.actual_amount == null ? "—" : formatCurrencyRange(item.actual_amount, item.actual_amount, item.currency)}</td>
+                    <td>{item.planned_amount == null ? "" : formatCurrencyRange(item.planned_amount, item.planned_amount, item.currency)}</td>
+                    <td>{item.actual_amount == null ? "" : formatCurrencyRange(item.actual_amount, item.actual_amount, item.currency)}</td>
                     <td>{titleCase(item.frequency)}</td>
                     <td><ConfidenceBadge confidence={item.confidence} /></td>
                     <td>{formatDate(item.date_checked)}</td>
-                    <td>{item.notes || "—"}</td>
+                    <td>{item.notes || ""}</td>
                     <td className="row-actions">
                       <details className="row-actions-menu">
-                        <summary aria-label="Row actions" title="Row actions">⋯</summary>
+                        <summary aria-label="Row actions" title="Row actions"></summary>
                         <div className="row-actions-popover" role="menu">
                           <button type="button" role="menuitem" onClick={() => openEditModal(item)}>Edit</button>
                           <button type="button" role="menuitem" onClick={() => archiveItem(item.id, true)}>Archive</button>
@@ -287,7 +274,7 @@ export function BudgetView({ data }: { data: MoveMapData }) {
                 <div key={item.id} className="archive-row">
                   <div>
                     <strong>{item.label}</strong>
-                    <span>{item.category} · {formatCurrencyRange(item.estimate_low, item.estimate_high, item.currency)}</span>
+                    <span>{item.category}  {formatCurrencyRange(item.estimate_low, item.estimate_high, item.currency)}</span>
                   </div>
                   <div className="page-actions archive-actions">
                     <button type="button" className="chip" onClick={() => openEditModal(item)}>Edit</button>

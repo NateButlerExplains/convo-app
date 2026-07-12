@@ -87,15 +87,12 @@ const priorityLabel: Record<string, string> = {
   medium: "Medium Priority",
   low: "Low Priority",
 };
-const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
-
 export function IdeasView({ data }: { data: MoveMapData }) {
   const [ideas, setIdeas] = useState<EditableIdea[]>(() => {
     const stored = loadIdeas();
     return stored ?? data.ideas.map((idea, index) => normalizeIdea(idea, index));
   });
-  const [filterStatus, setFilterStatus] = useState<"all" | "discussed" | "not_discussed">("all");
-  const [sortByPriority, setSortByPriority] = useState(true);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [draft, setDraft] = useState<IdeaDraft>(blankDraft);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -165,120 +162,64 @@ export function IdeasView({ data }: { data: MoveMapData }) {
     if (editingId && ideas.find((idea) => idea.id === editingId)?.archived) closeModal();
   };
 
-  const filtered = activeIdeas.filter((idea) => {
-    if (filterStatus === "discussed") return idea.discussed;
-    if (filterStatus === "not_discussed") return !idea.discussed;
-    return true;
-  });
+  const groups = (["high", "medium", "low"] as const)
+    .map((key) => ({
+      key,
+      label: priorityLabel[key],
+      items: [...activeIdeas]
+        .filter((idea) => idea.priority === key)
+        .sort((a, b) => activeIdeas.indexOf(a) - activeIdeas.indexOf(b)),
+    }))
+    .filter((group) => group.items.length > 0);
 
-  const sorted = [...filtered].sort((a, b) => {
-    if (sortByPriority) {
-      return (priorityOrder[a.priority] ?? 99) - (priorityOrder[b.priority] ?? 99);
-    }
-    return activeIdeas.indexOf(a) - activeIdeas.indexOf(b);
-  });
-
-  const groups = sortByPriority
-    ? (["high", "medium", "low"] as const)
-        .map((key) => ({
-          key,
-          label: priorityLabel[key],
-          items: sorted.filter((idea) => idea.priority === key),
-        }))
-        .filter((group) => group.items.length > 0)
-    : [{ key: "all", label: "All ideas", items: sorted }];
+  const toggleGroup = (key: string) => {
+    setCollapsedGroups((current) => ({ ...current, [key]: !current[key] }));
+  };
 
   return (
-    <div className="view">
-      <PageHeader eyebrow="Ideas" title="Keep track of open ideas">
-        Capture questions, conversation prompts, and early thoughts worth revisiting before they turn into decisions or tasks.
+    <div className="view reference-page ideas-page">
+      <PageHeader title="Ideas">
+        Capture conversation prompts and early thoughts worth revisiting before they become tasks or decisions.
       </PageHeader>
 
-      <section className="hero-card">
-        <div>
-          <h2>Idea list</h2>
-          <p>Capture ideas as they come up, then revisit the ones worth discussing.</p>
-        </div>
-        <div className="page-actions" aria-label="Idea actions">
-          <button type="button" className="chip button-primary" onClick={openModal}>Add idea</button>
-        </div>
-      </section>
-
-      {activeIdeas.length > 0 && (
-        <div className="sort-bar">
-          <div className="filter-bar" style={{ marginBottom: 0 }}>
-            <span className="filter-bar-label">Status</span>
-            <button
-              type="button"
-              className={`filter-chip ${filterStatus === "all" ? "active" : ""}`}
-              onClick={() => setFilterStatus("all")}
-            >
-              All
-            </button>
-            <button
-              type="button"
-              className={`filter-chip ${filterStatus === "not_discussed" ? "active-coral" : ""}`}
-              onClick={() => setFilterStatus("not_discussed")}
-            >
-              Not discussed
-            </button>
-            <button
-              type="button"
-              className={`filter-chip ${filterStatus === "discussed" ? "active-green" : ""}`}
-              onClick={() => setFilterStatus("discussed")}
-            >
-              Discussed
-            </button>
-          </div>
-          <div className="sort-toggle">
-            <span>Sort:</span>
-            <button
-              type="button"
-              className={sortByPriority ? "active-sort" : ""}
-              onClick={() => setSortByPriority(true)}
-            >
-              Priority
-            </button>
-            <button
-              type="button"
-              className={!sortByPriority ? "active-sort" : ""}
-              onClick={() => setSortByPriority(false)}
-            >
-              Added
-            </button>
-          </div>
-        </div>
-      )}
+      <div className="section-subhead ideas-subhead">
+        <div />
+        <button type="button" className="chip button-primary" onClick={openModal}>Add idea</button>
+      </div>
 
       {activeIdeas.length === 0 ? (
         <SectionCard title="No ideas yet" kicker="Blank slate" className="empty-note-state">
           <p>Add an idea to capture a question or prompt worth revisiting.</p>
         </SectionCard>
-      ) : filtered.length === 0 ? (
-        <div className="empty-filter-state">
-          <p>No ideas match the current filter.</p>
-        </div>
       ) : (
         groups.map((group) => (
           <div key={group.key} className="priority-group">
-            <div className="priority-group-heading">
+            <button
+              type="button"
+              className="priority-group-heading priority-group-toggle"
+              onClick={() => toggleGroup(group.key)}
+              aria-expanded={!collapsedGroups[group.key]}
+            >
               <span className={`priority-dot priority-dot-${group.key}`} />
               <h3>{group.label}</h3>
               <span className="priority-group-count">{group.items.length}</span>
-            </div>
-            <section className="card-grid">
+              <span className="priority-group-chevron">{collapsedGroups[group.key] ? "+" : "-"}</span>
+            </button>
+            {!collapsedGroups[group.key] && <section className="card-grid">
               {group.items.map((idea) => (
-                <article key={idea.id} className="section-card">
-                  <div className="modal-body">
+                <article key={idea.id} className="section-card idea-card">
+                  <div className="idea-card-body">
                     <div className="idea-card-head">
                       <span className={`priority-dot priority-dot-${idea.priority}`} />
                       <p className="card-kicker">{idea.priority} priority</p>
                     </div>
-                    <h4>{idea.prompt || "Untitled idea"}</h4>
-                    <p>{idea.topic || "No topic yet."}</p>
-                    <p>{idea.outcome || "No outcome captured yet."}</p>
-                    <p>{idea.notes || "No notes yet."}</p>
-                    <div className="card-meta">
+                    <h4 className="idea-prompt">{idea.prompt || "Untitled idea"}</h4>
+                    <span className="idea-topic">{idea.topic || "No topic yet"}</span>
+                    <div className="idea-detail-grid">
+                      <div><span>Outcome</span><p>{idea.outcome || "Not captured yet."}</p></div>
+                      <div><span>Notes</span><p>{idea.notes || "No notes yet."}</p></div>
+                    </div>
+                    <div className="card-meta idea-card-actions">
                       <span>{idea.discussed ? "Discussed" : "Not discussed"}</span>
                       <button className="chip" type="button" onClick={() => openEditModal(idea)}>Edit</button>
                       <button className="chip" type="button" onClick={() => archiveIdea(idea.id, true)}>Archive</button>
@@ -286,7 +227,7 @@ export function IdeasView({ data }: { data: MoveMapData }) {
                   </div>
                 </article>
               ))}
-            </section>
+            </section>}
           </div>
         ))
       )}

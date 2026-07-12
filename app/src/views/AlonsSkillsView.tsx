@@ -3,7 +3,13 @@ import { PageHeader } from "../components/PageHeader";
 import { SectionCard } from "../components/SectionCard";
 import { notifyMoveMapStateChanged } from "../lib/state-events";
 
-type SkillId = "communication" | "collaboration" | "listening";
+type SkillId =
+  | "communication"
+  | "collaboration"
+  | "listening"
+  | "patience"
+  | "kindness"
+  | "independence";
 
 type SkillProgress = Record<SkillId, number>;
 
@@ -22,35 +28,54 @@ type SkillsState = {
 
 const STORAGE_KEY = "move-map:alons-skills";
 const totalTripStars = 180;
+const skillIds: SkillId[] = [
+  "communication",
+  "collaboration",
+  "listening",
+  "patience",
+  "kindness",
+  "independence",
+];
+
 const skillGoals: Record<SkillId, number> = {
-  communication: 50,
-  collaboration: 50,
-  listening: 80,
+  communication: 30,
+  collaboration: 30,
+  listening: 30,
+  patience: 30,
+  kindness: 30,
+  independence: 30,
 };
 
-const skillCards: Array<{
-  id: SkillId;
-  title: string;
-  emoji: string;
-  description: string;
-}> = [
+const skillCards: Array<{ id: SkillId; title: string; description: string }> = [
   {
     id: "communication",
     title: "Communication",
-    emoji: "Talk",
     description: "Use words, ask for help, name feelings, and tell us what she needs.",
   },
   {
     id: "collaboration",
     title: "Collaboration",
-    emoji: "Team",
     description: "Share turns, help with tiny jobs, and practice doing things together.",
   },
   {
     id: "listening",
     title: "Listening",
-    emoji: "Listen",
     description: "Pause, hear directions, follow one step, then build toward multi-step listening.",
+  },
+  {
+    id: "patience",
+    title: "Patience",
+    description: "Wait her turn, handle small delays, and stay calm when something takes longer.",
+  },
+  {
+    id: "kindness",
+    title: "Kindness",
+    description: "Gentle hands, soft words, noticing others, and caring check-ins with family.",
+  },
+  {
+    id: "independence",
+    title: "Independence",
+    description: "Try first, finish simple self-help steps, and build confidence with little tasks.",
   },
 ];
 
@@ -63,13 +88,18 @@ const starterAccomplishments: Accomplishment[] = [
   { id: "listen-month-6", month: "Month 6", text: "Uses calm listening during travel practice or a new routine.", stars: 20 },
 ];
 
+const emptySkills = (): SkillProgress => ({
+  communication: 0,
+  collaboration: 0,
+  listening: 0,
+  patience: 0,
+  kindness: 0,
+  independence: 0,
+});
+
 const defaultState: SkillsState = {
   tripStars: totalTripStars,
-  skills: {
-    communication: 0,
-    collaboration: 0,
-    listening: 0,
-  },
+  skills: emptySkills(),
   accomplishments: starterAccomplishments,
 };
 
@@ -79,13 +109,14 @@ function loadState(): SkillsState {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState;
     const parsed = JSON.parse(raw) as Partial<SkillsState>;
+    const skills = emptySkills();
+    for (const id of skillIds) {
+      const value = parsed.skills?.[id];
+      skills[id] = typeof value === "number" ? clampStars(value, skillGoals[id]) : 0;
+    }
     return {
       tripStars: typeof parsed.tripStars === "number" ? parsed.tripStars : totalTripStars,
-      skills: {
-        communication: parsed.skills?.communication ?? 0,
-        collaboration: parsed.skills?.collaboration ?? 0,
-        listening: parsed.skills?.listening ?? 0,
-      },
+      skills,
       accomplishments: Array.isArray(parsed.accomplishments) ? parsed.accomplishments : starterAccomplishments,
     };
   } catch {
@@ -146,15 +177,15 @@ export function AlonsSkillsView() {
 
   return (
     <div className="view alons-skills-view">
-      <PageHeader eyebrow="Core / Decisions" title="Alon's Skills">
-        A kid-friendly six-month star board for communication, collaboration, and listening before the Barcelona trip.
+      <PageHeader title="Aloni's Skills">
+        Six skills for the trip path: communication, collaboration, listening, patience, kindness, and independence.
       </PageHeader>
 
       <section className="alon-trip-bank" aria-label="Barcelona Trip star bank">
         <div>
           <p className="eyebrow">Barcelona Trip stars</p>
           <h2>{remainingStars} stars left</h2>
-          <p>Drag a star into a skill, or tap Add star. Total trip bank: {totalTripStars} stars.</p>
+          <p>Tap <strong>Add star</strong> on a skill card to give Aloni a star. Total trip bank: {totalTripStars} stars.</p>
         </div>
         <button
           type="button"
@@ -171,14 +202,14 @@ export function AlonsSkillsView() {
         </button>
       </section>
 
-      <section className="alon-skill-grid" aria-label="Alon's skill categories">
+      <section className="alon-skill-grid" aria-label="Aloni's skill categories">
         {skillCards.map((skill) => {
-          const stars = state.skills[skill.id];
+          const stars = state.skills[skill.id] ?? 0;
           const goal = skillGoals[skill.id];
           const percent = Math.round((stars / goal) * 100);
           return (
-            <SectionCard key={skill.id} title={`${skill.emoji}: ${skill.title}`} kicker={`${stars}/${goal} stars`} className="alon-skill-card">
-              <p>{skill.description}</p>
+            <SectionCard key={skill.id} title={skill.title} kicker={`${stars}/${goal} stars`} className="alon-skill-card">
+                            <p className="alon-skill-copy">{skill.description}</p>
               <div
                 className="skill-drop-zone"
                 onDragOver={(event) => event.preventDefault()}
@@ -188,13 +219,24 @@ export function AlonsSkillsView() {
                   <div className="skill-progress-fill" style={{ width: `${percent}%` }} />
                 </div>
                 <div className="skill-stars" aria-label={`${stars} stars assigned`}>
-                  {Array.from({ length: Math.min(stars, 20) }, (_, index) => <span key={index}>{"\u2605"}</span>)}
-                  {stars > 20 && <strong>+{stars - 20}</strong>}
+                  {Array.from({ length: Math.min(stars, 12) }, (_, index) => (
+                    <span key={index}>{"\u2605"}</span>
+                  ))}
+                  {stars > 12 && <strong>+{stars - 12}</strong>}
                 </div>
               </div>
               <div className="alon-skill-actions">
-                <button type="button" className="chip" onClick={() => removeStar(skill.id)} disabled={stars === 0}>Remove star</button>
-                <button type="button" className="primary-button" onClick={() => addStar(skill.id)} disabled={remainingStars === 0 || stars >= goal}>Add star</button>
+                <button type="button" className="chip" onClick={() => removeStar(skill.id)} disabled={stars === 0}>
+                  Remove
+                </button>
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={() => addStar(skill.id)}
+                  disabled={remainingStars === 0 || stars >= goal}
+                >
+                  Add star
+                </button>
               </div>
             </SectionCard>
           );

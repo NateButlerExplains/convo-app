@@ -1,5 +1,3 @@
-import { Flag } from "lucide-react";
-
 interface RouteLandmark {
   key: string;
   label: string;
@@ -15,8 +13,7 @@ interface RouteLineProps {
   destinationLabel?: string;
 }
 
-
-export function RouteLine({ landmarks, currentPhaseIndex, totalPhases, destinationLabel = "Barcelona — January 2027" }: RouteLineProps) {
+export function RouteLine({ landmarks, currentPhaseIndex, totalPhases, destinationLabel }: RouteLineProps) {
   const progress = totalPhases > 0 ? ((currentPhaseIndex + 1) / totalPhases) * 100 : 0;
 
   return (
@@ -48,10 +45,7 @@ export function RouteLine({ landmarks, currentPhaseIndex, totalPhases, destinati
 
       <div className="route-line-connector" />
 
-      <div className="route-destination">
-        <Flag className="route-destination-icon" size={20} />
-        <span className="route-destination-label">{destinationLabel}</span>
-      </div>
+      {destinationLabel && <div className="route-destination-label">{destinationLabel}</div>}
     </div>
   );
 }

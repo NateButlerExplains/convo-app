@@ -17,7 +17,6 @@ type TaskDraft = {
 };
 
 type EditableTask = Task & { id: string; archived: boolean };
-
 type TasksStorageState = { tasks: EditableTask[]; draft: TaskDraft };
 
 const STORAGE_KEY = "move-map:tasks-view";
@@ -25,14 +24,8 @@ const blankDraft: TaskDraft = { title: "", track: "", status: "not_started", pri
 
 function loadStoredState(): TasksStorageState | null {
   if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<TasksStorageState>;
-    return { tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [], draft: parsed.draft ?? blankDraft };
-  } catch {
-    return null;
-  }
+  try { const raw = window.localStorage.getItem(STORAGE_KEY); if (!raw) return null; const parsed = JSON.parse(raw) as Partial<TasksStorageState>; return { tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [], draft: parsed.draft ?? blankDraft }; }
+  catch { return null; }
 }
 
 function createTask(draft: TaskDraft): EditableTask {
@@ -54,10 +47,7 @@ function createTask(draft: TaskDraft): EditableTask {
     archived: false,
   };
 }
-
-function draftFromTask(task: EditableTask): TaskDraft {
-  return { title: task.title, track: task.track, status: task.status, priority: task.priority ?? "medium", owner: task.owner, dueDate: task.due_date, notes: task.notes };
-}
+function draftFromTask(task: EditableTask): TaskDraft { return { title: task.title, track: task.track, status: task.status, priority: task.priority ?? "medium", owner: task.owner, dueDate: task.due_date, notes: task.notes }; }
 
 export function TasksView({ data }: { data: MoveMapData }) {
   const [tasks, setTasks] = useState<EditableTask[]>(() => loadStoredState()?.tasks ?? data.tasks.map((task) => ({ ...task, archived: false })));
@@ -66,6 +56,7 @@ export function TasksView({ data }: { data: MoveMapData }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [jumpedSection, setJumpedSection] = useState("");
   const [jumpedTaskId, setJumpedTaskId] = useState("");
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const syncJump = () => {
@@ -100,11 +91,6 @@ export function TasksView({ data }: { data: MoveMapData }) {
   const seedTasks = useMemo(() => data.tasks.map((task) => ({ ...task, archived: false })), [data.tasks]);
   const librarySource = useMemo(() => Array.from(new Map([...seedTasks, ...activeTasks].map((task) => [task.id, task])).values()), [activeTasks, seedTasks]);
 
-  const priorityQueue = useMemo(() => {
-    const order: NonNullable<Task["priority"]>[] = ["high", "medium", "low"];
-    return order.map((priority) => ({ priority, items: activeTasks.filter((task) => (task.priority ?? "medium") === priority) }));
-  }, [activeTasks]);
-
   const triggerLibrary = useMemo(() => {
     const sections = [
       { key: "Ad hoc conversation tasks", title: "Conversation Radar", seedIds: [] },
@@ -116,18 +102,38 @@ export function TasksView({ data }: { data: MoveMapData }) {
       { key: "Travel and arrival", title: "Travel", seedIds: ["task-arrival-checklist", "task-arrival-packet"] },
     ];
     const seededIds = new Set(sections.flatMap((section) => section.seedIds));
-    return sections.map((section) => {
+    const derived = sections.map((section) => {
       const items = section.seedIds.length > 0
         ? librarySource.filter((task) => section.seedIds.includes(task.id))
         : librarySource.filter((task) => !seededIds.has(task.id) && (!!task.conversation_prompt || task.track.toLowerCase().includes("conversation")));
-      const openItems = items.filter((task) => task.conversation_prompt);
-      const closedItems = items.filter((task) => !task.conversation_prompt);
       const completeCount = items.filter((task) => task.status === "done").length;
       const sectionSlug = section.key.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      const isFocused = jumpedSection === sectionSlug;
-      return { ...section, items, openItems, closedItems, completeCount, isFocused };
+      const hashFocused = jumpedSection === sectionSlug;
+      const isComplete = items.length > 0 && completeCount === items.length;
+      return { ...section, items, completeCount, sectionSlug, hashFocused, isComplete };
     });
-  }, [jumpedSection, jumpedTaskId, librarySource]);
+
+    const researchComplete = derived.find((section) => section.key === "Research and feasibility")?.isComplete ?? false;
+    const nextFocus = researchComplete
+      ? derived.find((section) => section.key !== "Ad hoc conversation tasks" && !section.isComplete)
+      : derived.find((section) => section.key === "Research and feasibility");
+
+    return derived.map((section) => {
+      const isRadar = section.key === "Ad hoc conversation tasks";
+      const isFocusDefault = nextFocus?.key === section.key;
+      const isFocused = section.hashFocused || isFocusDefault;
+      const isDimmed = !isRadar && !isFocused;
+      const defaultExpanded = isRadar || isFocusDefault;
+      return { ...section, isRadar, isFocused, isDimmed, defaultExpanded };
+    });
+  }, [jumpedSection, librarySource]);
+
+  const toggleSection = (sectionKey: string, defaultExpanded: boolean) => {
+    setCollapsedSections((current) => {
+      const currentValue = current[sectionKey] ?? !defaultExpanded;
+      return { ...current, [sectionKey]: !currentValue };
+    });
+  };
 
   const openModal = () => { setEditingId(null); setDraft(blankDraft); setIsModalOpen(true); };
   const openEditModal = (task: EditableTask) => { setEditingId(task.id); setDraft(draftFromTask(task)); setIsModalOpen(true); };
@@ -139,33 +145,40 @@ export function TasksView({ data }: { data: MoveMapData }) {
 
   return (
     <div className="view spreadsheet-view">
-      <PageHeader eyebrow="Tasks" title="Next steps">Conversation creates tasks; priority decides what gets done first.</PageHeader>
-      <section className="hero-card"><div><h2>Conversation-led task queue</h2><p>Tasks come from conversation, get prioritized, and stay visible until done.</p></div></section>
-
-      <SectionCard title="Priority queue" kicker="AI-ready task triage">
-        <div className="priority-queue-grid">{priorityQueue.map((bucket) => <div key={bucket.priority} className={`priority-queue-bucket priority-${bucket.priority}`}><div className="priority-queue-head"><strong>{titleCase(bucket.priority)} priority</strong><span>{bucket.items.length}</span></div><p>{bucket.priority === "high" ? "Work these next to move the plan forward." : bucket.priority === "medium" ? "Track these in the active queue." : "Keep these visible for later."}</p>{bucket.items.length > 0 ? <ul>{bucket.items.slice(0, 4).map((task) => <li key={task.id}>{task.title}</li>)}</ul> : <span className="small-text">No tasks here yet.</span>}</div>)}</div>
-      </SectionCard>
+      <PageHeader title="Tasks">
+        Trigger library and editable task board for the move.
+      </PageHeader>
 
       <SectionCard title="Trigger library" kicker="Conversation-led next steps">
         <div className="trigger-library-grid">
-          {triggerLibrary.map((section, index) => {
-            const sectionSlug = section.key.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+          {triggerLibrary.map((section) => {
+            const isCollapsed = collapsedSections[section.key] ?? !section.defaultExpanded;
             return (
-              <article key={section.key} className={`trigger-library-card ${section.isFocused ? "is-jumped" : ""}`} id={`tasks-trigger-${sectionSlug}`} tabIndex={-1}>
-                <div className="trigger-library-head">
-                  <div><p className="card-kicker">{section.title}</p><strong>{section.key}</strong>{section.isFocused ? <span className="from-home-badge">Focus here first</span> : null}</div>
-                  <span className={`trigger-count ${section.isFocused ? "is-current" : "is-complete"}`}>{section.completeCount}/{section.items.length} complete</span>
-                </div>
-                {index === 0 && section.isFocused ? <p className="trigger-library-instruction">Start with the glowing conversation card below. The other sections stay available for later.</p> : null}
-                <div className="track-list trigger-library-items">
-                  {section.openItems.map((task) => (
-                    <div key={task.id} id={`task-card-${task.id}`} tabIndex={-1} className={`track-row road-track-row trigger-library-item ${jumpedTaskId === task.id ? "is-target-task" : ""}`}>
-                      <div className="trigger-task-copy"><strong>{task.title}</strong><p>{task.notes}</p><p className="task-conversation-prompt">Discussion: {task.conversation_prompt}</p></div>
-                      <div className="trigger-task-actions"><button type="button" className="task-link" onClick={() => { const ctx = { taskId: task.id, taskTitle: task.title, prompt: task.conversation_prompt, followUpTaskIds: task.follow_up_task_ids ?? [], sectionKey: section.key, openedAt: new Date().toISOString() }; try { window.localStorage.setItem("move-map:conversation-context", JSON.stringify(ctx)); } catch {} window.location.hash = "#conversation"; }}>Open conversation</button><StatusPill status={task.status} /></div>
-                    </div>
-                  ))}
-                  {section.closedItems.length > 0 ? <details className="trigger-library-collapsed"><summary>Other tracked tasks ({section.closedItems.length})</summary>{section.closedItems.map((task) => <div key={task.id} id={`task-card-${task.id}`} tabIndex={-1} className={`trigger-library-collapsed-item ${jumpedTaskId === task.id ? "is-target-task" : ""}`}><span>{task.title}</span><StatusPill status={task.status} /></div>)}</details> : null}
-                </div>
+              <article key={section.key} className={`trigger-library-card ${section.isFocused ? "is-jumped" : ""} ${section.isDimmed ? "is-dimmed" : ""}`} id={`tasks-trigger-${section.sectionSlug}`} tabIndex={-1}>
+                <button type="button" className="trigger-library-head trigger-library-toggle" onClick={() => toggleSection(section.key, section.defaultExpanded)} aria-expanded={!isCollapsed}>
+                  <div className="trigger-library-title-block"><p className="card-kicker">{section.title}</p><strong>{section.key}</strong>{section.isFocused ? <span className="from-home-badge">Focus here first</span> : null}</div>
+                  <div className="trigger-library-head-meta">
+                    <span className={`trigger-count ${section.isFocused ? "is-current" : "is-complete"}`}>{section.completeCount}/{section.items.length} complete</span>
+                    <span className="priority-group-chevron">{isCollapsed ? "+" : "-"}</span>
+                  </div>
+                </button>
+                {section.isRadar && section.isFocused ? <p className="trigger-library-instruction">Start with the glowing conversation card below. The other sections stay available for later.</p> : null}
+                {!isCollapsed && <div className="track-list trigger-library-items">
+                  {section.items.map((task) => {
+                    const hasConversation = Boolean(task.conversation_prompt);
+                    return (
+                      <div key={task.id} id={`task-card-${task.id}`} tabIndex={-1} className={`track-row road-track-row trigger-library-item trigger-library-panel ${jumpedTaskId === task.id ? "is-target-task" : ""}`}>
+                        <div className="trigger-task-copy">
+                          <StatusPill status={task.status} />
+                          <strong>{task.title}</strong>
+                          <p>{task.notes || "No notes yet."}</p>
+                          {hasConversation ? <p className="task-conversation-prompt">Discussion: {task.conversation_prompt}</p> : null}
+                        </div>
+                        {hasConversation ? <div className="trigger-task-actions"><button type="button" className="task-link" onClick={() => { const ctx = { taskId: task.id, taskTitle: task.title, prompt: task.conversation_prompt, followUpTaskIds: task.follow_up_task_ids ?? [], sectionKey: section.key, openedAt: new Date().toISOString() }; try { window.localStorage.setItem("move-map:conversation-context", JSON.stringify(ctx)); } catch {} window.location.hash = "#conversation"; }}>Open conversation</button></div> : null}
+                      </div>
+                    );
+                  })}
+                </div>}
               </article>
             );
           })}

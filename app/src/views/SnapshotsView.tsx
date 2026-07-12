@@ -61,8 +61,8 @@ export function SnapshotsView({ data }: { data: MoveMapData }) {
 
   return (
     <div className="view">
-      <PageHeader eyebrow="Snapshots" title="Preserve today’s version of the plan">
-        Work from blank local state, add only the snapshots you want to keep, and keep them in browser storage until you clear the list.
+      <PageHeader title="Snapshots">
+        Save and review local plan snapshots so you can preserve how the move plan looked at a moment in time.
       </PageHeader>
 
       <section className="hero-card">

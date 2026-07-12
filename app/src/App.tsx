@@ -5,6 +5,7 @@ import { AppShell } from "./components/AppShell";
 import { MOVE_MAP_STATE_CHANGED_EVENT } from "./lib/state-events";
 import { loadLiveSnapshot } from "./lib/live-snapshot";
 import { HomeView } from "./views/HomeView";
+import { BigTripView } from "./views/BigTripView";
 import { ConversationView } from "./views/ConversationView";
 import { FamilyTimelineView } from "./views/FamilyTimelineView";
 import { BudgetView } from "./views/BudgetView";
@@ -19,7 +20,7 @@ import { TasksView } from "./views/TasksView";
 import { RisksView } from "./views/RisksView";
 
 const data = rawData as MoveMapData;
-const views: ViewKey[] = ["home", "conversation", "calendar", "budget", "debt", "expenses", "income", "housing", "decisions", "alons-skills", "options", "ideas", "tasks", "risks"];
+const views: ViewKey[] = ["home", "big-trip", "conversation", "calendar", "budget", "debt", "expenses", "income", "housing", "decisions", "alons-skills", "options", "ideas", "tasks", "risks"];
 const STORAGE_KEY = "barcelona-move-map.milestones.v1";
 function fromHash(): ViewKey {
   const key = window.location.hash.replace("#", "") as ViewKey;
@@ -51,6 +52,7 @@ export default function App() {
   const { roadmapData, liveState } = useMemo(() => loadLiveSnapshot(data, milestones), [data, milestones, syncTick]);
   const content = useMemo(() => {
     switch (view) {
+      case "big-trip": return <BigTripView data={roadmapData} />;
       case "conversation": return <ConversationView data={roadmapData} />;
       case "calendar": return <FamilyTimelineView data={roadmapData} />;
       case "budget": return <BudgetView data={roadmapData} />;

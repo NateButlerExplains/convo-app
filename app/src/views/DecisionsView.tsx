@@ -190,16 +190,9 @@ export function DecisionsView({ data }: { data: MoveMapData }) {
 
   return (
     <div className="view">
-      <PageHeader eyebrow="Decisions" title="Decision cards">
-        Compare open decisions, keep the important context visible, and archive cards once they are settled for now.
+      <PageHeader title="Decisions">
+        Decision cards promoted from conversations, with status, context, and archive for settled choices.
       </PageHeader>
-
-      <section className="hero-card">
-        <div>
-          <h2>Decision cards</h2>
-          <p>Decision cards appear here after a recorded conversation is parsed, supporting tasks and questions are pulled out, and the decision is ready to keep.</p>
-        </div>
-      </section>
 
       <section className="postcard-grid">
         {activeDecisions.length === 0 ? (

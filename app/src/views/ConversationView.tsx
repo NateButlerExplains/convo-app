@@ -655,8 +655,8 @@ export function ConversationView({ data: _data }: { data: MoveMapData }) {
 
   return (
     <div className="view conversation-mode">
-      <PageHeader eyebrow="Conversation" title="Family conversation tracker">
-        {taskContext ? `${taskContext.taskTitle}: ${taskContext.prompt}` : "A shared space to guide move conversations, track who has spoken, capture open questions, and save what still needs a follow-up."}
+      <PageHeader title="Conversation">
+        {taskContext ? `${taskContext.taskTitle}: ${taskContext.prompt}` : "Record family planning talks, track speakers, capture notes, and turn the conversation into tasks and decisions."}
       </PageHeader>
 
       <section className="recording-section unified-session">
@@ -683,13 +683,6 @@ export function ConversationView({ data: _data }: { data: MoveMapData }) {
             <h2>{sessionActive ? "Recording in progress" : "Record a family conversation"}</h2>
           </div>
         </div>
-        <div className="session-pipeline" aria-label="Conversation processing flow">
-          <span><strong>1</strong> Record</span>
-          <span><strong>2</strong> Stop &amp; save</span>
-          <span><strong>3</strong> Transcribe &amp; extract</span>
-          <span><strong>4</strong> Review &amp; route</span>
-        </div>
-
         {!sessionActive && (
           <div className="session-setup">
             <label className="speaker-pick">
@@ -723,52 +716,56 @@ export function ConversationView({ data: _data }: { data: MoveMapData }) {
 
         {sessionActive && (
           <div className="session-live">
-            <Waveform stream={stream} active={isRecording} />
+            <div className="session-live-top-row">
+              <div className="session-live-visual">
+                <Waveform stream={stream} active={isRecording} />
+              </div>
 
-            <div className="session-live-meta">
-              <span className="recording-timer">{formatClock(durationSeconds)}</span>
-              <span
-                className={`recording-dot ${isRecording ? "is-live" : "is-paused"}`}
-                aria-hidden="true"
-              />
-              {isPaused && <span className="session-paused-label">Paused</span>}
-            </div>
+              <div className="session-live-mid-col">
+                <div className="session-live-meta centered-stack">
+                  <span className="recording-timer">{formatClock(durationSeconds)}</span>
+                  <span
+                    className={`recording-dot ${isRecording ? "is-live" : "is-paused"}`}
+                    aria-hidden="true"
+                  />
+                  {isPaused && <span className="session-paused-label">Paused</span>}
+                </div>
 
-            <div className="session-controls">
-              <button type="button" onClick={handlePauseOrResume} disabled={!sessionActive}>
-                {isPaused ? "Resume" : "Pause"}
-              </button>
-              <button type="button" className="stop-session-btn" onClick={handleStop} disabled={!sessionActive}>
-                Stop &amp; save
-              </button>
-            </div>
-
-            <div className={`mini-card current-speaker-${currentSpeaker.toLowerCase()}`}>
-              <strong className="current-speaker-label">Current speaker: {currentSpeaker}</strong>
-              <div className="print-actions">
-                <button
-                  onClick={() => switchSpeaker(currentSpeaker === "Nate" ? "Shae" : "Nate")}
-                  disabled={!sessionActive}
-                >
-                  Switch to {currentSpeaker === "Nate" ? "Shae" : "Nate"}
+                <button type="button" className="session-btn" onClick={handlePauseOrResume} disabled={!sessionActive}>
+                  {isPaused ? "Resume" : "Pause"}
                 </button>
-                <button
-                  className={interruptDisabled ? "interrupt-button is-disabled" : "interrupt-button"}
-                  onClick={interrupt}
-                  disabled={interruptDisabled}
-                  aria-disabled={interruptDisabled}
-                  title={
-                    interruptDisabled && sessionActive
-                      ? `${interruptActor} has used all interrupt tokens`
-                      : undefined
-                  }
-                >
-                  Interrupt as {interruptActor} ({interruptTokens - interrupts[interruptActor]} left)
+                <button type="button" className="stop-session-btn session-btn" onClick={handleStop} disabled={!sessionActive}>
+                  Stop &amp; save
                 </button>
+              </div>
+
+              <div className="session-live-right-col">
+                <div className={`mini-card current-speaker-card current-speaker-${currentSpeaker.toLowerCase()}`}>
+                  <strong className="current-speaker-label">Current speaker: {currentSpeaker}</strong>
+                  <button
+                    onClick={() => switchSpeaker(currentSpeaker === "Nate" ? "Shae" : "Nate")}
+                    disabled={!sessionActive}
+                  >
+                    Switch to {currentSpeaker === "Nate" ? "Shae" : "Nate"}
+                  </button>
+                  <button
+                    className={interruptDisabled ? "interrupt-button is-disabled" : "interrupt-button"}
+                    onClick={interrupt}
+                    disabled={interruptDisabled}
+                    aria-disabled={interruptDisabled}
+                    title={
+                      interruptDisabled && sessionActive
+                        ? `${interruptActor} has used all interrupt tokens`
+                        : undefined
+                    }
+                  >
+                    Interrupt as {interruptActor} ({interruptTokens - interrupts[interruptActor]} left)
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="session-meters">
+            <div className="session-live-bottom-row">
               {participants.map((person) => {
                 const isActive = person === currentSpeaker && sessionActive;
                 return (
@@ -776,7 +773,7 @@ export function ConversationView({ data: _data }: { data: MoveMapData }) {
                     <div className="speaker-meter-head">
                       <strong>{person}</strong>
                       <span>
-                        {formatClock(speakingTotals[person])} spoken · {interrupts[person]} interrupts used
+                        {formatClock(speakingTotals[person])} spoken  {interrupts[person]} interrupts used
                       </span>
                     </div>
                     <div className="speaker-meter-track">

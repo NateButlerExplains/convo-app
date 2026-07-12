@@ -129,8 +129,8 @@ export function ExpensesView({ data: _data }: { data: MoveMapData }) {
 
   const setDraft = (patch: Partial<ExpenseDraft>) => setState((current) => ({ ...current, draft: { ...current.draft, ...patch } }));
 
-  const openCreateModal = () => {
-    setState((current) => ({ ...current, draft: blankDraft }));
+  const openCreateModal = (person: ExpensePerson = "Nate") => {
+    setState((current) => ({ ...current, draft: { ...blankDraft, person } }));
     setEditor({ mode: "create", sourceId: null });
   };
 
@@ -198,19 +198,13 @@ export function ExpensesView({ data: _data }: { data: MoveMapData }) {
   const renderColumn = (person: ExpensePerson) => {
     const rows = personRows[person];
     const archived = archivedByPerson[person];
-    const total = personTotals[person];
-
     return (
-      <SectionCard title={person} kicker="Editable expense ledger" className="expense-column-card">
+      <SectionCard title={person} className="expense-column-card">
         <div className="expense-column-meta">
-          <div>
-            <span>Active rows</span>
-            <strong>{rows.length}</strong>
-          </div>
-          <div>
-            <span>Total</span>
-            <strong>{money(total)}</strong>
-          </div>
+          <strong>{person}</strong>
+          <button className="chip button-primary" type="button" style={{ padding: ".35rem .65rem", fontSize: ".78rem" }} onClick={() => openCreateModal(person)}>
+            New expense item
+          </button>
         </div>
         <div className="expense-table-wrap">
           <table className="planning-table expense-table">
@@ -299,19 +293,9 @@ export function ExpensesView({ data: _data }: { data: MoveMapData }) {
 
   return (
     <div className="view spreadsheet-view expenses-view">
-      <PageHeader eyebrow="Expenses" title="Editable expense surface">
-        Track each person in their own column and manage entries from a modal so the table stays readable.
+      <PageHeader title="Expenses">
+        Side-by-side expense columns for Nate and Shae, with modal add/edit and archive controls.
       </PageHeader>
-
-      <section className="hero-card">
-        <div>
-          <h2>Expense ledger</h2>
-          <p>Keep each person's active rows visible, then move older items into the archive when you want a cleaner working table.</p>
-        </div>
-        <div className="page-actions" aria-label="Expense actions">
-          <button type="button" className="chip button-primary" onClick={openCreateModal}>New expense</button>
-        </div>
-      </section>
 
       <section className="summary-strip expense-summary">
         <div><span>Nate total</span><strong>{money(personTotals.Nate)}</strong></div>

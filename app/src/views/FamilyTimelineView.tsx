@@ -3,6 +3,7 @@ import type { MoveMapData } from "../types/move-map";
 import { PageHeader } from "../components/PageHeader";
 import { notifyMoveMapStateChanged } from "../lib/state-events";
 import { SectionCard } from "../components/SectionCard";
+import { MoveCountdown } from "../components/MoveCountdown";
 
 type EventType = "deadline" | "family visit" | "daughter event" | "move milestone" | "important family date";
 
@@ -51,17 +52,6 @@ function saveStoredEvents(nextEvents: CalendarEvent[]) {
   }
 }
 
-function splitCountdownParts(countdownText: string) {
-  const tokens = countdownText.split(" ");
-  const parts: { value: string; label: string }[] = [];
-  for (let i = 0; i < tokens.length; i += 2) {
-    const value = tokens[i];
-    const label = tokens[i + 1];
-    if (value && label) parts.push({ value, label });
-  }
-  return parts;
-}
-
 const typeClasses: Record<EventType, string> = {
   deadline: "event-deadline",
   "family visit": "event-family",
@@ -81,7 +71,6 @@ export function FamilyTimelineView({ data }: { data: MoveMapData }) {
   const [showAgenda, setShowAgenda] = useState(true);
   const [modal, setModal] = useState<ModalMode>(null);
   const [dragTarget, setDragTarget] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState("");
   const [newDraft, setNewDraft] = useState<CalendarEventForm>({ date: `${activeMonth}-01`, label: "", type: "move milestone", note: "" });
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [pendingAddDate, setPendingAddDate] = useState<string | null>(null);
@@ -98,22 +87,6 @@ export function FamilyTimelineView({ data }: { data: MoveMapData }) {
     setSelectedDate(nextDate);
     setSelectedDay(nextDate);
   };
-  useEffect(() => {
-    const target = new Date("2027-01-15T00:00:00");
-    const tick = () => {
-      const now = new Date();
-      const diff = Math.max(0, target.getTime() - now.getTime());
-      const totalMonths = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
-      const remainingDays = Math.floor(diff / 86400000) % 31;
-      const remainingHours = Math.floor(diff / 3600000) % 24;
-      const remainingMinutes = Math.floor(diff / 60000) % 60;
-      const remainingSeconds = Math.floor(diff / 1000) % 60;
-      setCountdown(`${Math.max(0, totalMonths)} month${totalMonths === 1 ? "" : "s"} ${remainingDays} day${remainingDays === 1 ? "" : "s"} ${remainingHours} hour${remainingHours === 1 ? "" : "s"} ${remainingMinutes} minute${remainingMinutes === 1 ? "" : "s"} ${remainingSeconds} second${remainingSeconds === 1 ? "" : "s"}`);
-    };
-    tick();
-    const id = window.setInterval(tick, 1000);
-    return () => window.clearInterval(id);
-  }, []);
   const monthDays = useMemo(() => {
     const first = new Date(activeMonthDate.getFullYear(), activeMonthDate.getMonth(), 1);
     const start = new Date(first);
@@ -133,8 +106,8 @@ export function FamilyTimelineView({ data }: { data: MoveMapData }) {
 
   return (
     <div className="view family-timeline-view">
-      <PageHeader eyebrow="Calendar" title="Family move calendar">
-        A month-by-month calendar for deadlines, family dates, move milestones, and the events that need everyone to stay in sync.
+      <PageHeader title="Calendar">
+        Month calendar and agenda for deadlines, family dates, move milestones, and the big-move countdown.
       </PageHeader>
 
       <SectionCard title="Month view" kicker={activeMonthLabel} className="month-view-card">
@@ -147,19 +120,7 @@ export function FamilyTimelineView({ data }: { data: MoveMapData }) {
             <button className="chip button-primary" type="button" onClick={() => { setNewDraft({ date: defaultEntryDate, label: "", type: "move milestone", note: "" }); setModal({ kind: "new", date: defaultEntryDate }); }}>Add new entry</button>
           </div>
         </div>
-        {countdown && (
-          <div className="countdown-ticker" aria-live="polite">
-            <div className="flap-label">The Big Move Countdown</div>
-            <div className="countdown-rows">
-              {splitCountdownParts(countdown).map(({ value, label }) => (
-                <div key={`${value}-${label}`} className="countdown-row">
-                  <span className="countdown-value">{value}</span>
-                  <span className="countdown-label">{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <MoveCountdown destinationLabel={`Barcelona - ${data.plan.target_move_date || "2027-01"}`} />
         <div className="calendar-shell">
           <div className="calendar-grid">
             {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <div key={day} className="calendar-dow">{day}</div>)}

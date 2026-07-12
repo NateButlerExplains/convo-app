@@ -18,7 +18,7 @@ Mission: Make the Home route rail derive its position from saved edits on the ex
 ##  Milestone Cleanup & Polish  In Progress
 Mission: Polish, review, and fix M2 (Conversation Mode), M3 (Family Timeline), and M4 (Income & Housing Planning) to **shipped/approved** status through a fleet-wide coordination cycle involving all 8 agents (Senter, Anser, Crow, Chizul, Klerik, Kashik, Nous-girl, Frieza). **All milestones shipped  cycle complete.**
 - Coordinate fleet-wide cleanup cycle  Senter
-- [x] Rename nav `Home Dashboard` to `Dashboard`; add Core `Alon's Skills` page with Barcelona Trip star bank, skill star allocation, and six-month listening accomplishments. Build and Playwright DOM verification passed; Klerik review pending.
+- [x] Rename nav `Home Dashboard` to `Dashboard`; add Core `Aloni's Skills` page with Barcelona Trip star bank, skill star allocation, and six-month listening accomplishments. Build and Playwright DOM verification passed; Klerik review pending.
 - [x] Remove the combined `Income & Housing Planning` nav/route; keep split `Income Planning` and `Housing Planning` pages only.
 - [x] Remove Decisions page add/new-decision button; decisions now read as Conversation-promoted records.
 - [x] Restore shared formatting for Calendar, modal, archive, table, expense, and income/housing layouts.

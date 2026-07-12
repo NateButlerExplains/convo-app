@@ -40,7 +40,7 @@ function canUseLocalStorage() {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
 
-function loadIdeas() {
+export function loadIdeas() {
   if (!canUseLocalStorage()) return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);

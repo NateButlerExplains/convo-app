@@ -1,8 +1,9 @@
 import { FileText, Flag, Home, PiggyBank, Plane, Search, Shield, ShieldCheck } from "lucide-react";
+import { loadIdeas } from "../views/IdeasView";
 import type { CockpitLiveState } from "../lib/live-snapshot";
 import { deriveRouteProgress, type RouteRequirement } from "../lib/route-progress";
 import { titleCase } from "../lib/formatters";
-import type { MoveMapData } from "../types/move-map";
+import type { MoveMapData, Idea } from "../types/move-map";
 import { PageHeader } from "../components/PageHeader";
 import { RouteLine } from "../components/RouteLine";
 import { SectionCard } from "../components/SectionCard";
@@ -34,6 +35,12 @@ const triggerSectionSlugByCheckpoint: Record<string, string> = {
   travel: "travel-and-arrival",
 };
 
+type HomeIdea = Idea & { archived?: boolean };
+
+function normalizeHomeIdea(idea: HomeIdea): Required<Pick<HomeIdea, "archived">> & Omit<HomeIdea, "archived"> {
+  return { ...idea, archived: Boolean(idea.archived) };
+}
+
 function requirementHref(checkpointKey: string, requirement: RouteRequirement) {
   if (requirement.taskId) return `#tasks-trigger-${triggerSectionSlugByCheckpoint[checkpointKey] ?? checkpointKey}-${requirement.taskId}`;
   if (requirement.page === "housing") return "#housing";
@@ -46,11 +53,12 @@ export function HomeView({ data, liveState }: { data: MoveMapData; liveState: Co
   const conversationRadarTasks = data.tasks
     .filter((task) => task.status !== "done" && task.track.toLowerCase().includes("ad hoc conversation"))
     .sort((a, b) => (a.priority === b.priority ? a.title.localeCompare(b.title) : a.priority === "high" ? -1 : b.priority === "high" ? 1 : 0));
-  const openIdeas = data.ideas
-    .filter((idea) => !idea.discussed)
+  const openIdeas = (loadIdeas() ?? data.ideas)
+    .map((idea) => normalizeHomeIdea(idea as HomeIdea))
+    .filter((idea) => !idea.archived && !idea.discussed)
     .sort((a, b) => (a.priority === b.priority ? a.topic.localeCompare(b.topic) : a.priority === "high" ? -1 : b.priority === "high" ? 1 : 0));
   const openRisks = data.risks
-    .filter((risk) => risk.status !== "resolved")
+    .filter((risk) => !((risk as { archived?: boolean }).archived) && risk.status !== "resolved")
     .sort((a, b) => (a.impact === b.impact ? a.title.localeCompare(b.title) : a.impact === "high" ? -1 : b.impact === "high" ? 1 : 0));
   const landmarks = LANDMARKS.map((landmark, index) => ({
     ...landmark,

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ConversationContext, MoveMapData, ParsedTranscript, ParsedTranscriptItem, RecordedAudio } from "../types/move-map";
+import { exportAudioMp3 } from "../lib/audio-export";
 import { PageHeader } from "../components/PageHeader";
 import { SectionCard } from "../components/SectionCard";
 import { Waveform } from "../components/Waveform";
@@ -128,6 +129,7 @@ function ArchiveAudioPlayer({
 }) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     let url: string | null = null;
@@ -171,6 +173,23 @@ function ArchiveAudioPlayer({
           aria-label="Delete recording"
         >
           Delete recording
+        </button>
+        <button
+          type="button"
+          onClick={async () => {
+            if (isExporting || !blobUrl) return;
+            setIsExporting(true);
+            try {
+              const response = await fetch(blobUrl);
+              const blob = await response.blob();
+              await exportAudioMp3(blob, `session-recording-${recording.id}`);
+            } finally {
+              setIsExporting(false);
+            }
+          }}
+          disabled={isExporting || !blobUrl}
+        >
+          {isExporting ? "Converting…" : "Download MP3"}
         </button>
       </div>
     </div>

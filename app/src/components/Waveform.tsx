@@ -26,7 +26,9 @@ export function Waveform({ stream, active }: { stream: MediaStream | null; activ
     let source: MediaStreamAudioSourceNode | null = null;
     let analyser: AnalyserNode | null = null;
     let frequencyData: Uint8Array<ArrayBuffer> | null = null;
+    let timeData: Uint8Array<ArrayBuffer> | null = null;
     let smoothBands = Array.from({ length: POINTS }, () => 0);
+    let smoothWave = Array.from({ length: POINTS }, () => 0);
     let energy = 0.06;
     let width = 0;
     let height = 0;
@@ -76,6 +78,98 @@ export function Waveform({ stream, active }: { stream: MediaStream | null; activ
       });
     };
 
+    const waveform = () => {
+      if (!analyser || !timeData) {
+        return smoothWave.map((_, index) =>
+          Math.sin(index * 0.2 - time * 0.025) * 0.08 + Math.sin(index * 0.067 + time * 0.012) * 0.04,
+        );
+      }
+      analyser.getByteTimeDomainData(timeData);
+      const data = timeData!;
+      return smoothWave.map((_, index) => {
+        const sample = data[Math.floor((index / POINTS) * data.length)] / 128 - 1;
+        return Math.max(-1, Math.min(1, sample * 1.85 + Math.sin(index * 0.105 - time * 0.02) * 0.035));
+      });
+    };
+
+    const voiceRibbon = (cy: number, wave: number[]) => {
+      const left = width * 0.055;
+      const span = width * 0.89;
+      const amplitude = 34 + energy * 104;
+      const gradient = ctx.createLinearGradient(left, 0, left + span, 0);
+      gradient.addColorStop(0, "rgba(88, 202, 214, 0)");
+      gradient.addColorStop(0.16, "rgba(88, 202, 214, .34)");
+      gradient.addColorStop(0.47, "rgba(255, 221, 126, .52)");
+      gradient.addColorStop(0.7, "rgba(255, 193, 67, .34)");
+      gradient.addColorStop(1, "rgba(255, 220, 126, 0)");
+
+      const pointAt = (index: number, trail: number) => {
+        const progress = index / (POINTS - 1);
+        const shifted = (index + trail * 4 + POINTS) % POINTS;
+        const envelope = Math.pow(Math.sin(progress * Math.PI), 0.5);
+        const drift = Math.sin(progress * TAU * 2.2 - time * 0.018 + trail * 0.6) * (3 + energy * 5);
+        return {
+          x: left + progress * span,
+          y: cy + wave[shifted] * amplitude * envelope + drift + trail * 5.2,
+        };
+      };
+
+      const traceRibbon = (trail: number, reverse = false, connected = false) => {
+        const step = reverse ? -1 : 1;
+        const start = reverse ? POINTS - 1 : 0;
+        const end = reverse ? 0 : POINTS - 1;
+        const first = pointAt(start, trail);
+        connected ? ctx.lineTo(first.x, first.y) : ctx.moveTo(first.x, first.y);
+        for (let index = start + step; index !== end; index += step) {
+          const point = pointAt(index, trail);
+          const next = pointAt(index + step, trail);
+          ctx.quadraticCurveTo(point.x, point.y, (point.x + next.x) / 2, (point.y + next.y) / 2);
+        }
+        const last = pointAt(end, trail);
+        ctx.lineTo(last.x, last.y);
+      };
+
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+
+      // A translucent surface between the outer echoes makes the signal feel physical.
+      ctx.beginPath();
+      traceRibbon(-2);
+      traceRibbon(2, true, true);
+      ctx.closePath();
+      ctx.globalAlpha = 0.11 + energy * 0.12;
+      ctx.fillStyle = gradient;
+      ctx.shadowBlur = 18 + energy * 24;
+      ctx.shadowColor = "rgba(102, 215, 224, .42)";
+      ctx.fill();
+
+      for (let trail = -2; trail <= 2; trail++) {
+        ctx.beginPath();
+        traceRibbon(trail);
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = trail === 0 ? 2.1 : 0.8;
+        ctx.globalAlpha = trail === 0 ? 0.92 : 0.28;
+        ctx.shadowBlur = trail === 0 ? 15 + energy * 26 : 5;
+        ctx.shadowColor = trail < 0 ? "rgba(91, 215, 225, .8)" : "rgba(255, 202, 83, .85)";
+        ctx.stroke();
+      }
+
+      const travel = (time * (0.0028 + energy * 0.002)) % 1;
+      const photon = pointAt(Math.min(POINTS - 1, Math.floor(travel * POINTS)), 0);
+      const glowRadius = 14 + energy * 18;
+      const photonGlow = ctx.createRadialGradient(photon.x, photon.y, 0, photon.x, photon.y, glowRadius);
+      photonGlow.addColorStop(0, "rgba(255, 255, 240, .95)");
+      photonGlow.addColorStop(0.16, "rgba(255, 222, 126, .62)");
+      photonGlow.addColorStop(0.48, "rgba(87, 213, 224, .15)");
+      photonGlow.addColorStop(1, "rgba(87, 213, 224, 0)");
+      ctx.globalAlpha = 0.72 + energy * 0.22;
+      ctx.fillStyle = photonGlow;
+      ctx.beginPath();
+      ctx.arc(photon.x, photon.y, glowRadius, 0, TAU);
+      ctx.fill();
+      ctx.restore();
+    };
+
     const membranePath = (
       cx: number,
       cy: number,
@@ -108,6 +202,10 @@ export function Waveform({ stream, active }: { stream: MediaStream | null; activ
       const baseRadius = Math.min(width, height) * 0.165;
       const rawBands = spectrum();
       smoothBands = smoothBands.map((value, index) => value + (rawBands[index] - value) * (rawBands[index] > value ? 0.32 : 0.09));
+      const rawWave = waveform();
+      smoothWave = smoothWave.map((value, index) =>
+        value + (rawWave[index] - value) * (Math.abs(rawWave[index]) > Math.abs(value) ? 0.4 : 0.16),
+      );
       const average = smoothBands.reduce((sum, value) => sum + value, 0) / POINTS;
       energy += ((active ? average : 0.055) - energy) * 0.1;
 
@@ -133,6 +231,9 @@ export function Waveform({ stream, active }: { stream: MediaStream | null; activ
         ctx.fillStyle = `rgba(${spark.distance > 2.4 ? "105, 205, 215" : "255, 220, 126"}, ${spark.alpha * pulse})`;
         ctx.fill();
       }
+
+      // The real time-domain signal becomes a luminous ribbon through the field.
+      voiceRibbon(cy, smoothWave);
 
       // Elliptical energy orbits sit behind and in front of the organism.
       rings.forEach((ring, index) => {
@@ -210,6 +311,7 @@ export function Waveform({ stream, active }: { stream: MediaStream | null; activ
         analyser.fftSize = 512;
         analyser.smoothingTimeConstant = 0.78;
         frequencyData = new Uint8Array(new ArrayBuffer(analyser.frequencyBinCount));
+        timeData = new Uint8Array(new ArrayBuffer(analyser.fftSize));
         source.connect(analyser);
       }
     }
